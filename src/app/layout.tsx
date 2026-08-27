@@ -1,17 +1,37 @@
 import type { Metadata, Viewport } from "next";
+import { IOSActiveStateFix } from "@/components/IOSActiveStateFix";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Trip Planner",
   description: "Optimal route planning for visiting multiple places on a trip",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-180.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Trip Planner",
+  },
+  // Chrome deprecated apple-mobile-web-app-capable (still needed for actual iOS Safari) in
+  // favor of this standard tag — `appleWebApp` above only emits the old one.
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0f172a",
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2f2f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export default function RootLayout({
@@ -21,8 +41,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-dvh bg-slate-950 text-slate-50 antialiased">
+      <head>
+        {/* Runs before first paint so a stored preference applies immediately, no flash of the wrong theme. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try {
+  var t = localStorage.getItem('theme');
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+} catch (e) {}`,
+          }}
+        />
+      </head>
+      <body>
         {children}
+        <ServiceWorkerRegister />
+        <IOSActiveStateFix />
       </body>
     </html>
   );

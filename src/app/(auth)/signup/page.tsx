@@ -1,9 +1,65 @@
-// Phase 0: new account registration via Supabase Auth.
-export default function SignupPage() {
+import Link from "next/link";
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { Button } from "@/components/ui/Button";
+import { FormRow } from "@/components/ui/FormRow";
+import { ListSection } from "@/components/ui/List";
+import { signup } from "../actions";
+
+export default function SignupPage({
+  searchParams,
+}: {
+  searchParams: { error?: string };
+}) {
   return (
-    <main className="flex min-h-dvh flex-col justify-center gap-4 p-6">
-      <h1 className="text-2xl font-semibold">Sign up</h1>
-      {/* TODO: form wired to supabase.auth.signUp */}
+    <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
+      <h1 className="text-center text-[1.75rem] font-bold tracking-tight">Create account</h1>
+
+      {searchParams.error && (
+        <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.error}</p>
+      )}
+
+      <GoogleLoginButton />
+
+      <div className="flex items-center gap-3 text-[0.8125rem] text-[var(--color-label-tertiary)]">
+        <div className="h-px flex-1 bg-[var(--color-separator)]" />
+        or
+        <div className="h-px flex-1 bg-[var(--color-separator)]" />
+      </div>
+
+      <form action={signup} className="flex flex-col gap-4">
+        <ListSection>
+          <FormRow label="Email" htmlFor="email">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="you@email.com"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+            />
+          </FormRow>
+          <FormRow label="Password" htmlFor="password">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              placeholder="••••••••"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+            />
+          </FormRow>
+        </ListSection>
+
+        <Button type="submit">Sign Up</Button>
+      </form>
+
+      <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">
+        Already have an account?{" "}
+        <Link href="/login" className="font-medium text-[var(--color-accent)]">
+          Log in
+        </Link>
+      </p>
     </main>
   );
 }

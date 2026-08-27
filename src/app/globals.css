@@ -1,3 +1,136 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* iOS system color tokens — light mode default, dark mode via prefers-color-scheme.
+   Values match Apple's HIG system colors, already tuned for WCAG-adequate contrast. */
+:root {
+  color-scheme: light dark;
+
+  --color-bg: #f2f2f7;
+  --color-bg-elevated: #ffffff;
+  --color-fill-secondary: rgba(120, 120, 128, 0.16);
+  --color-label: #000000;
+  --color-label-secondary: rgba(60, 60, 67, 0.6);
+  --color-label-tertiary: rgba(60, 60, 67, 0.3);
+  --color-separator: rgba(60, 60, 67, 0.29);
+  --color-accent: #007aff;
+  --color-destructive: #ff3b30;
+  --color-success: #34c759;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Applies when the system is dark AND the user hasn't manually forced light mode. */
+  :root:not([data-theme="light"]) {
+    --color-bg: #000000;
+    --color-bg-elevated: #1c1c1e;
+    --color-fill-secondary: rgba(120, 120, 128, 0.24);
+    --color-label: #ffffff;
+    --color-label-secondary: rgba(235, 235, 245, 0.6);
+    --color-label-tertiary: rgba(235, 235, 245, 0.3);
+    --color-separator: rgba(84, 84, 88, 0.65);
+    --color-accent: #0a84ff;
+    --color-destructive: #ff453a;
+    --color-success: #30d158;
+    color-scheme: dark;
+  }
+}
+
+/* Explicit override from the in-app Appearance toggle, wins regardless of system preference. */
+:root[data-theme="dark"] {
+  --color-bg: #000000;
+  --color-bg-elevated: #1c1c1e;
+  --color-fill-secondary: rgba(120, 120, 128, 0.24);
+  --color-label: #ffffff;
+  --color-label-secondary: rgba(235, 235, 245, 0.6);
+  --color-label-tertiary: rgba(235, 235, 245, 0.3);
+  --color-separator: rgba(84, 84, 88, 0.65);
+  --color-accent: #0a84ff;
+  --color-destructive: #ff453a;
+  --color-success: #30d158;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+html {
+  touch-action: manipulation;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-label);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Hairline divider between rows in a grouped list, mimicking iOS's inset grouped style. */
+.ios-list > * + * {
+  border-top: 0.5px solid var(--color-separator);
+}
+
+.tinted-accent {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+}
+
+.tinted-success {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.tinted-error {
+  background: color-mix(in srgb, var(--color-destructive) 15%, transparent);
+  color: var(--color-destructive);
+}
+
+/* Nav bar as a translucent material layer, content scrolls underneath it — not an opaque bar
+   that just consumes a fixed strip. */
+.nav-material {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nav-material {
+    background: var(--color-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* MapLibre's popup/attribution/zoom controls render on a light background regardless of the
+   app's theme — without this they'd inherit the (possibly light-mode-inverted) label color and
+   become unreadable. The map's own basemap (CARTO Positron) is always light, so a fixed dark
+   label color is correct in both app themes. */
+.maplibregl-popup-content,
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib a,
+.maplibregl-ctrl-group button {
+  color: #1c1c1e;
+}

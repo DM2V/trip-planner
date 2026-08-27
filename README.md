@@ -6,6 +6,7 @@ saves it, and shares it (read-only) with friends.
 ## Stack
 
 - Next.js + TypeScript + Tailwind CSS
+- Motion (spring-based gestures — swipe-to-delete)
 - MapLibre GL JS + CARTO basemaps (no API key required, free minimalist tiles)
 - OpenRouteService Optimization API (solves the optimal stop order) + Geocoding API (place search) —
   one free API key, email signup only, no credit card
@@ -19,8 +20,10 @@ saves it, and shares it (read-only) with friends.
    - Supabase: Project Settings → API Keys (`anon key`, `service_role key`) and
      Integrations → Data API (`Project URL`)
    - OpenRouteService: sign up at openrouteservice.org/dev/#/signup (email only) → Dashboard → API key
-4. Apply the schema: paste the contents of `supabase/migrations/0001_init.sql` into the SQL Editor
-   of your Supabase project (or use `supabase db push` if you have the CLI installed)
+4. Apply the schema: paste the contents of each file in `supabase/migrations/` (in order,
+   `0001_init.sql` through the highest-numbered one) into the SQL Editor of your Supabase project
+   (or use `supabase db push` if you have the CLI installed). Skipping the later migrations leaves
+   signup, viewing shared trips, and the share feature itself broken.
 5. `npm run dev` → http://localhost:3000
 
 ## Key security
@@ -31,7 +34,8 @@ saves it, and shares it (read-only) with friends.
   one-off server-side admin tasks — it bypasses RLS entirely.
 - `ORS_API_KEY` also has no `NEXT_PUBLIC_` prefix on purpose — unlike Mapbox's public tokens,
   OpenRouteService keys aren't meant to be restricted by domain, so all calls go through the
-  `/api/optimize-route` and `/api/places-search` server routes instead of straight from the browser.
+  `/api/places-search` route and the `calculateRoute` server action instead of straight from
+  the browser.
 - `.env.local` is in `.gitignore`. Never commit an `.env` file with real values; always use
   `.env.example` as the template in the repo.
 
