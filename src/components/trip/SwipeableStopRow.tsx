@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { deleteStop } from "@/app/trips/actions";
+import { OpenInMapsSheet } from "@/components/trip/OpenInMapsSheet";
 import { TrashIcon } from "@/components/ui/icons";
-import { googleMapsDirectionsUrl } from "@/lib/utils";
 import type { Stop } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the row occupies when resting open
@@ -51,6 +51,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
   const [hidden, setHidden] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
+  const [mapsSheetOpen, setMapsSheetOpen] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>();
   const fadeTimer = useRef<ReturnType<typeof setTimeout>>();
   // handlePointerUp already knows whether this gesture was a drag, but it clears dragState
@@ -226,7 +227,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
             close();
             return;
           }
-          window.open(googleMapsDirectionsUrl(stop.lat, stop.lng), "_blank", "noopener,noreferrer");
+          setMapsSheetOpen(true);
         }}
         aria-label={`${stop.name}, open directions in Google Maps`}
         className="relative z-10 flex min-h-[52px] w-full items-center gap-3 bg-[var(--color-bg-elevated)] px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
@@ -241,6 +242,15 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
         </span>
         <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
       </button>
+
+      {mapsSheetOpen && (
+        <OpenInMapsSheet
+          stopName={stop.name}
+          lat={stop.lat}
+          lng={stop.lng}
+          onClose={() => setMapsSheetOpen(false)}
+        />
+      )}
     </div>
   );
 }
