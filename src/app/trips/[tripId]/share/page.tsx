@@ -1,4 +1,5 @@
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
+import { SharedStopRow } from "@/components/trip/SharedStopRow";
 import { MapView, type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -90,12 +91,7 @@ export default async function SharedTripPage({
 
         <ListSection>
           {(stops ?? []).map((stop, index) => (
-            <div key={stop.id} className="flex min-h-[52px] items-center gap-3 px-4 py-2.5">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.8125rem] font-semibold text-white">
-                {index + 1}
-              </span>
-              <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
-            </div>
+            <SharedStopRow key={stop.id} stop={stop} position={index + 1} />
           ))}
         </ListSection>
 

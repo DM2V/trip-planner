@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { deleteStop } from "@/app/trips/actions";
 import { TrashIcon } from "@/components/ui/icons";
+import { googleMapsDirectionsUrl } from "@/lib/utils";
 import type { Stop } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the row occupies when resting open
@@ -43,7 +44,7 @@ interface DragState {
 // of the physics is plain, debuggable code.
 export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowProps) {
   const prefersReducedMotion = useReducedMotion();
-  const rowRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLButtonElement>(null);
   const x = useMotionValue(0);
   const dragState = useRef<DragState | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -52,6 +53,10 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
   const [fadingOut, setFadingOut] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>();
   const fadeTimer = useRef<ReturnType<typeof setTimeout>>();
+  // handlePointerUp already knows whether this gesture was a drag, but it clears dragState
+  // before the browser's own synthesized click fires — remember it here so the click handler
+  // can tell a real tap (open directions) apart from the tail end of a swipe.
+  const wasDraggingRef = useRef(false);
 
   // Paint x on the row directly — sidesteps any framework-level style-merging ambiguity.
   useEffect(() => x.on("change", (latest) => {
@@ -157,6 +162,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
     const state = dragState.current;
     dragState.current = null;
     if (!state?.dragging) return;
+    wasDraggingRef.current = true;
 
     // The last recorded velocity is only meaningful if the finger was still moving right up to
     // release — if it came to rest and paused before lifting, that stale reading would otherwise
@@ -201,16 +207,29 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
         <TrashIcon className="h-5 w-5" />
       </button>
 
-      <div
+      <button
+        type="button"
         ref={rowRef}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onClick={() => {
-          if (revealed) close();
+          // A click firing right after a drag is the browser's own click synthesis following
+          // the swipe gesture, not a deliberate tap — swallow it once rather than also opening
+          // directions.
+          if (wasDraggingRef.current) {
+            wasDraggingRef.current = false;
+            return;
+          }
+          if (revealed) {
+            close();
+            return;
+          }
+          window.open(googleMapsDirectionsUrl(stop.lat, stop.lng), "_blank", "noopener,noreferrer");
         }}
-        className="relative z-10 flex min-h-[52px] items-center gap-3 bg-[var(--color-bg-elevated)] px-4 py-2.5"
+        aria-label={`${stop.name}, open directions in Google Maps`}
+        className="relative z-10 flex min-h-[52px] w-full items-center gap-3 bg-[var(--color-bg-elevated)] px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
         style={
           prefersReducedMotion
             ? { opacity: fadingOut ? 0 : 1, transition: `opacity ${REDUCED_MOTION_FADE_MS}ms ease` }
@@ -221,7 +240,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
           {position}
         </span>
         <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
-      </div>
+      </button>
     </div>
   );
 }
