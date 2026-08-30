@@ -113,6 +113,10 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
 
   function handlePointerDown(e: React.PointerEvent) {
     if (prefersReducedMotion || (e.pointerType === "mouse" && e.button !== 0)) return;
+    // A tap starting on an actual control (directions link, trash button) isn't a swipe — let it
+    // behave like a normal click/link instead of claiming pointer capture, which on Safari/iOS
+    // silently swallows the click that would otherwise follow on the captured element's children.
+    if ((e.target as HTMLElement).closest("a, button")) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     // Cancel any in-flight release spring so a re-grab mid-animation hands control back to the
     // finger immediately instead of fighting the animation for the next few frames — interruption
