@@ -19,6 +19,30 @@ export interface MapMarker {
   lng: number;
   label: string;
   variant?: "origin" | "stop";
+  order?: number; // visiting position (1, 2, 3...) shown inside the pin; omitted for the origin
+}
+
+// A numbered circle badge, matching the accent-blue "position" badge already used in the stop
+// list — same visual language for the same concept, on the map instead of the list.
+function createMarkerElement(point: MapMarker): HTMLDivElement {
+  const el = document.createElement("div");
+  el.textContent = point.order != null ? String(point.order) : "";
+  Object.assign(el.style, {
+    width: "26px",
+    height: "26px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#ffffff",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+    background: point.variant === "origin" ? ORIGIN_COLOR : STOP_COLOR,
+    border: "2px solid #ffffff",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.35)",
+  });
+  return el;
 }
 
 interface MapViewProps {
@@ -79,9 +103,9 @@ export function MapView({ markers, routeGeometry = null, readOnly = false }: Map
 
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = markers.map((point) =>
-      new maplibregl.Marker({ color: point.variant === "origin" ? ORIGIN_COLOR : STOP_COLOR })
+      new maplibregl.Marker({ element: createMarkerElement(point), anchor: "center" })
         .setLngLat([point.lng, point.lat])
-        .setPopup(new maplibregl.Popup({ offset: 24 }).setText(point.label))
+        .setPopup(new maplibregl.Popup({ offset: 20 }).setText(point.label))
         .addTo(map),
     );
 

@@ -42,11 +42,12 @@ export default async function TripDetailPage({
 
   const markers: MapMarker[] = [
     { lat: trip.origin_lat, lng: trip.origin_lng, label: trip.origin_label, variant: "origin" },
-    ...(stops ?? []).map((stop) => ({
+    ...(stops ?? []).map((stop, index) => ({
       lat: stop.lat,
       lng: stop.lng,
       label: stop.name,
       variant: "stop" as const,
+      order: index + 1,
     })),
   ];
 

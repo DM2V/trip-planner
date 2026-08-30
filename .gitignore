@@ -25,3 +25,4 @@ npm-debug.log*
 
 # local Claude Code tooling, not project source
 /.claude/
+.env*
