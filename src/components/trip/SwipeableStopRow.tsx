@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { deleteStop } from "@/app/trips/actions";
-import { TrashIcon } from "@/components/ui/icons";
+import { DirectionsIcon, TrashIcon } from "@/components/ui/icons";
+import { googleMapsDirectionsUrl } from "@/lib/utils";
 import type { Stop } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the row occupies when resting open
@@ -222,6 +223,16 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
           {position}
         </span>
         <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
+        <a
+          href={googleMapsDirectionsUrl(stop.lat, stop.lng)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Directions to ${stop.name}`}
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+        >
+          <DirectionsIcon className="h-5 w-5" />
+        </a>
         <button
           type="button"
           onClick={(e) => {

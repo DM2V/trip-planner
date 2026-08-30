@@ -1,8 +1,10 @@
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
 import { MapView, type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
+import { DirectionsIcon } from "@/components/ui/icons";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { googleMapsDirectionsUrl } from "@/lib/utils";
 
 function InvalidLink() {
   return (
@@ -95,6 +97,15 @@ export default async function SharedTripPage({
                 {index + 1}
               </span>
               <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
+              <a
+                href={googleMapsDirectionsUrl(stop.lat, stop.lng)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Directions to ${stop.name}`}
+                className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+              >
+                <DirectionsIcon className="h-5 w-5" />
+              </a>
             </div>
           ))}
         </ListSection>
