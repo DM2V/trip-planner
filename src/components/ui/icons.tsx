@@ -80,10 +80,3 @@ export function CheckIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-export function DirectionsIcon({ className = "h-5 w-5" }: IconProps) {
-  return (
-    <svg {...base} strokeWidth={2} className={className}>
-      <path d="M3 11l18-8-8 18-2-8-8-2z" />
-    </svg>
-  );
-}

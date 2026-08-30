@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { deleteStop } from "@/app/trips/actions";
-import { DirectionsIcon, TrashIcon } from "@/components/ui/icons";
-import { googleMapsDirectionsUrl } from "@/lib/utils";
+import { TrashIcon } from "@/components/ui/icons";
 import type { Stop } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the row occupies when resting open
@@ -41,8 +40,7 @@ interface DragState {
 // Swipe-to-delete, the emblematic iOS list gesture (Mail, Reminders) — built on raw Pointer
 // Events (setPointerCapture, 1:1 tracking, a manual rubber-band past the limit, velocity handoff
 // into the release spring) rather than a gesture-recognizer library's `drag` prop, so every part
-// of the physics is plain, debuggable code. The trash button stays visible and keyboard-reachable
-// regardless of the gesture — swipe is a bonus, never the only way to delete.
+// of the physics is plain, debuggable code.
 export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowProps) {
   const prefersReducedMotion = useReducedMotion();
   const rowRef = useRef<HTMLDivElement>(null);
@@ -113,10 +111,6 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
 
   function handlePointerDown(e: React.PointerEvent) {
     if (prefersReducedMotion || (e.pointerType === "mouse" && e.button !== 0)) return;
-    // A tap starting on an actual control (directions link, trash button) isn't a swipe — let it
-    // behave like a normal click/link instead of claiming pointer capture, which on Safari/iOS
-    // silently swallows the click that would otherwise follow on the captured element's children.
-    if ((e.target as HTMLElement).closest("a, button")) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     // Cancel any in-flight release spring so a re-grab mid-animation hands control back to the
     // finger immediately instead of fighting the animation for the next few frames — interruption
@@ -216,7 +210,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
         onClick={() => {
           if (revealed) close();
         }}
-        className="flex min-h-[52px] items-center gap-3 bg-[var(--color-bg-elevated)] px-4 py-2.5"
+        className="relative z-10 flex min-h-[52px] items-center gap-3 bg-[var(--color-bg-elevated)] px-4 py-2.5"
         style={
           prefersReducedMotion
             ? { opacity: fadingOut ? 0 : 1, transition: `opacity ${REDUCED_MOTION_FADE_MS}ms ease` }
@@ -227,27 +221,6 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
           {position}
         </span>
         <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
-        <a
-          href={googleMapsDirectionsUrl(stop.lat, stop.lng)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          aria-label={`Directions to ${stop.name}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
-        >
-          <DirectionsIcon className="h-5 w-5" />
-        </a>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            animateOutThenCommit();
-          }}
-          aria-label={`Remove ${stop.name}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-destructive)] active:opacity-50"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </button>
       </div>
     </div>
   );
