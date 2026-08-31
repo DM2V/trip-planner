@@ -50,7 +50,7 @@ export function OpenInMapsSheet({ stopName, lat, lng, onClose }: OpenInMapsSheet
           <button
             type="button"
             onClick={() => {
-              window.open(googleMapsDirectionsUrl(lat, lng), "_blank", "noopener,noreferrer");
+              window.open(googleMapsDirectionsUrl(stopName, lat, lng), "_blank", "noopener,noreferrer");
               onClose();
             }}
             className="block min-h-[52px] w-full text-[1.0625rem] font-medium text-[var(--color-accent)] active:bg-[var(--color-fill-secondary)]"
