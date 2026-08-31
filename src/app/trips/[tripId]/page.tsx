@@ -85,7 +85,7 @@ export default async function TripDetailPage({
           )}
         </div>
 
-        <AddStopField tripId={trip.id} />
+        <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
 
         <StopList tripId={trip.id} stops={stops ?? []} />
 

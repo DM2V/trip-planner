@@ -70,7 +70,11 @@ export default function NewTripPage({
           <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
             Starting point
           </p>
-          <PlaceSearchInput placeholder="Hotel, address..." onSelect={setOrigin} />
+          <PlaceSearchInput
+            placeholder="Hotel, address..."
+            onSelect={setOrigin}
+            focus={geolocation.position ?? undefined}
+          />
           <button
             type="button"
             onClick={geolocation.request}

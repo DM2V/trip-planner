@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { SearchIcon } from "@/components/ui/icons";
+import type { LatLng } from "@/types";
 
 interface Place {
   label: string;
@@ -12,12 +13,17 @@ interface Place {
 interface PlaceSearchInputProps {
   placeholder?: string;
   onSelect: (place: Place) => void | Promise<void>;
+  // Biases results toward this point (nearest first) instead of ranking on text match alone — the
+  // trip's origin when searching for a stop, say, so a name that exists in several cities doesn't
+  // surface a same-named place somewhere else in the world ahead of the one actually meant.
+  focus?: LatLng;
 }
 
 // Phase 1/2: debounced search box backed by /api/places-search (OpenRouteService Geocoding).
 export function PlaceSearchInput({
   placeholder = "Search for a place...",
   onSelect,
+  focus,
 }: PlaceSearchInputProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Place[]>([]);
@@ -37,7 +43,12 @@ export function PlaceSearchInput({
 
     timeoutRef.current = setTimeout(async () => {
       setLoading(true);
-      const response = await fetch(`/api/places-search?q=${encodeURIComponent(value)}`);
+      const params = new URLSearchParams({ q: value });
+      if (focus) {
+        params.set("focusLat", String(focus.lat));
+        params.set("focusLng", String(focus.lng));
+      }
+      const response = await fetch(`/api/places-search?${params.toString()}`);
       const data = await response.json();
       setSuggestions(data.suggestions ?? []);
       setLoading(false);

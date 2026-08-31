@@ -16,6 +16,17 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("api_key", ORS_API_KEY ?? "");
   url.searchParams.set("text", query);
 
+  // Bias results toward a reference point (the trip's origin when adding a stop, or the user's
+  // location when picking that origin) so a name that matches places in several cities ranks the
+  // nearby one first — without this, Pelias only ranks by text relevance and can just as easily
+  // surface a same-named place on the other side of the world above the one actually meant.
+  const focusLat = request.nextUrl.searchParams.get("focusLat");
+  const focusLng = request.nextUrl.searchParams.get("focusLng");
+  if (focusLat && focusLng) {
+    url.searchParams.set("focus.point.lat", focusLat);
+    url.searchParams.set("focus.point.lon", focusLng);
+  }
+
   const response = await fetch(url.toString());
   if (!response.ok) {
     return NextResponse.json(
