@@ -33,6 +33,7 @@ interface SwipeableStopRowProps {
 
 interface DragState {
   startX: number;
+  startY: number;
   startValue: number;
   lastX: number;
   lastT: number;
@@ -126,6 +127,7 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
     x.stop();
     dragState.current = {
       startX: e.clientX,
+      startY: e.clientY,
       startValue: x.get(),
       lastX: e.clientX,
       lastT: performance.now(),
@@ -140,7 +142,20 @@ export function SwipeableStopRow({ tripId, stop, position }: SwipeableStopRowPro
 
     const dx = e.clientX - state.startX;
     if (!state.dragging) {
-      if (Math.abs(dx) < MOVE_THRESHOLD) return;
+      const dy = e.clientY - state.startY;
+      // Ambiguous until movement clears the noise floor. Once it does, whichever axis moved
+      // further wins — an ordinary vertical scroll is rarely perfectly straight, so without this
+      // comparison, scrolling the list by starting a drag on a row could get misread as a swipe.
+      if (Math.abs(dx) < MOVE_THRESHOLD && Math.abs(dy) < MOVE_THRESHOLD) return;
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        dragState.current = null;
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {
+          // Already released (e.g. the browser already fired a pointercancel) — nothing to do.
+        }
+        return;
+      }
       state.dragging = true;
     }
 
