@@ -60,7 +60,7 @@ export function PlaceSearchInput({
       )}
       {error && <p className="mt-1 px-1 text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
       {suggestions.length > 0 && (
-        <ul className="ios-list absolute z-30 mt-1 w-full overflow-hidden rounded-2xl bg-[var(--color-bg-elevated)] shadow-lg">
+        <ul className="sheet-material ios-list absolute z-30 mt-1 w-full overflow-hidden rounded-2xl shadow-lg">
           {suggestions.map((place, index) => (
             <li key={index}>
               <button

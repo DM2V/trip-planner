@@ -42,7 +42,7 @@ export function OpenInMapsSheet({ stopName, lat, lng, onClose }: OpenInMapsSheet
           visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         }`}
       >
-        <div className="ios-list overflow-hidden rounded-2xl bg-[var(--color-bg-elevated)] text-center shadow-lg">
+        <div className="sheet-material ios-list overflow-hidden rounded-2xl text-center shadow-lg">
           <div className="px-4 py-3">
             <p className="text-[0.8125rem] text-[var(--color-label-secondary)]">Get directions to</p>
             <p className="truncate text-[0.9375rem] font-medium">{stopName}</p>
@@ -62,7 +62,7 @@ export function OpenInMapsSheet({ stopName, lat, lng, onClose }: OpenInMapsSheet
         <button
           type="button"
           onClick={onClose}
-          className="mt-2 block min-h-[52px] w-full rounded-2xl bg-[var(--color-bg-elevated)] text-[1.0625rem] font-semibold text-[var(--color-accent)] shadow-lg active:bg-[var(--color-fill-secondary)]"
+          className="sheet-material mt-2 block min-h-[52px] w-full rounded-2xl text-[1.0625rem] font-semibold text-[var(--color-accent)] shadow-lg active:bg-[var(--color-fill-secondary)]"
         >
           Cancel
         </button>

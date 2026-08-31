@@ -96,7 +96,11 @@ body {
 }
 
 /* Nav bar as a translucent material layer, content scrolls underneath it — not an opaque bar
-   that just consumes a fixed strip. */
+   that just consumes a fixed strip. Tinted with the app's own light/dark token (unlike
+   .map-chrome below) since whatever scrolls beneath it follows the same theme. The hairline
+   + inset highlight give it a defined glass edge instead of just a blurred smear — the same
+   Liquid Glass signature as .map-chrome, dialed back for legibility over arbitrary scrolled
+   content instead of a predictable light map. */
 .nav-material {
   position: sticky;
   top: 0;
@@ -104,11 +108,34 @@ body {
   background: color-mix(in srgb, var(--color-bg) 72%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-label) 8%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-label) 6%, transparent);
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .nav-material {
     background: var(--color-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+}
+
+/* Same idea as .nav-material, applied to a floating card instead of a full-bleed bar: action
+   sheets and the place-search dropdown are chrome hovering over (dimmed or regular) app content,
+   so — like real iOS action sheets and Spotlight-style search — they read as glass rather than a
+   flat opaque card. Structural content groups (.ios-list rows, ListSection) stay solid on
+   purpose: per Apple's own material hierarchy, glass belongs to floating chrome, not to the
+   content it's floating over. */
+.sheet-material {
+  background: color-mix(in srgb, var(--color-bg-elevated) 82%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sheet-material {
+    background: var(--color-bg-elevated);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
