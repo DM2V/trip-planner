@@ -22,7 +22,7 @@ export function PlaceSearchInput({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [submittingIndex, setSubmittingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -65,10 +65,10 @@ export function PlaceSearchInput({
             <li key={index}>
               <button
                 type="button"
-                disabled={submitting}
+                disabled={submittingIndex !== null}
                 onClick={async () => {
                   setError(null);
-                  setSubmitting(true);
+                  setSubmittingIndex(index);
                   try {
                     // Only clear the query/suggestions once the caller's onSelect has actually
                     // succeeded — otherwise a failed addStop (network error, RLS rejection, ...)
@@ -79,12 +79,17 @@ export function PlaceSearchInput({
                   } catch (err) {
                     setError(err instanceof Error ? err.message : "Could not add this place");
                   } finally {
-                    setSubmitting(false);
+                    setSubmittingIndex(null);
                   }
                 }}
-                className="block min-h-[44px] w-full px-4 py-2.5 text-left text-[1.0625rem] active:bg-[var(--color-fill-secondary)] disabled:opacity-50"
+                className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2.5 text-left text-[1.0625rem] active:bg-[var(--color-fill-secondary)] disabled:opacity-50"
               >
-                {place.label}
+                {submittingIndex === index && (
+                  <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent text-[var(--color-accent)]" />
+                )}
+                <span className="min-w-0 flex-1 truncate">
+                  {submittingIndex === index ? "Adding..." : place.label}
+                </span>
               </button>
             </li>
           ))}
