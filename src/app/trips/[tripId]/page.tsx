@@ -67,7 +67,7 @@ export default async function TripDetailPage({
             <ChevronLeftIcon className="h-5 w-5" />
             Trips
           </Link>
-          <ShareTripButton tripId={trip.id} shareToken={trip.share_token} />
+          <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
         </div>
       </div>
 
