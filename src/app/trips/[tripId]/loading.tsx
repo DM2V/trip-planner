@@ -8,10 +8,10 @@ export default function TripDetailLoading() {
   return (
     <main className="flex min-h-dvh flex-col">
       <div className="relative h-[42vh] w-full animate-pulse bg-[var(--color-fill-secondary)]">
-        <div className="nav-material !absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2 pb-2 pt-3">
+        <div className="map-chrome absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2 pb-2 pt-3">
           <Link
             href="/trips"
-            className="-ml-2 flex min-h-[44px] items-center gap-0.5 rounded-full px-2 text-[1.0625rem] text-[var(--color-accent)]"
+            className="-ml-2 flex min-h-[44px] items-center gap-0.5 rounded-full px-2 text-[1.0625rem] text-[#007aff]"
           >
             <ChevronLeftIcon className="h-5 w-5" />
             Trips
