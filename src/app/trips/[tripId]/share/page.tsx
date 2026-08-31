@@ -84,7 +84,7 @@ export default async function SharedTripPage({
           {trip.optimized_route && (
             <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
               {(trip.optimized_route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-              {Math.round(trip.optimized_route.durationSeconds / 60)} min walking
+              {Math.round(trip.optimized_route.durationSeconds / 60)} min driving
             </p>
           )}
         </div>

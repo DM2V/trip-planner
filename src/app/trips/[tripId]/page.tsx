@@ -80,7 +80,7 @@ export default async function TripDetailPage({
             {route && (
               <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
                 {(route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-                {Math.round(route.durationSeconds / 60)} min walking
+                {Math.round(route.durationSeconds / 60)} min driving
               </p>
             )}
           </div>

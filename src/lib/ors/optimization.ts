@@ -31,7 +31,10 @@ export async function getOptimizedRoute(
       vehicles: [
         {
           id: 1,
-          profile: "foot-walking",
+          // driving-car, not foot-walking: stops can be tens of km apart, which produced
+          // multi-hour "walking" estimates. ORS/VROOM has no public-transit profile at all, so
+          // this is the closest realistic option without a separate transit routing API.
+          profile: "driving-car",
           start: [origin.lng, origin.lat],
         },
       ],
