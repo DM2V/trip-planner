@@ -4,12 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { deleteTrip } from "@/app/trips/actions";
+import { ConfirmDeleteSheet } from "@/components/trip/ConfirmDeleteSheet";
 import { ChevronRightIcon, TrashIcon } from "@/components/ui/icons";
 import type { Trip } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the card occupies when resting open
-const COMMIT_DISTANCE = 200; // px of drag that commits a delete outright (a full swipe)
-const VELOCITY_COMMIT = 500; // px/s flick speed that commits regardless of distance
 const MOVE_THRESHOLD = 10; // px of hysteresis before a press counts as a drag rather than a click
 const STALE_VELOCITY_MS = 100; // if the finger held still this long before lifting, ignore the last recorded velocity
 const REDUCED_MOTION_FADE_MS = 180;
@@ -17,8 +16,9 @@ const UNDO_WINDOW_MS = 4000;
 const SPRING = { type: "spring" as const, damping: 30, stiffness: 300 };
 
 // Apple's rubber-band curve (Designing Fluid Interfaces, WWDC18) — see SwipeableStopRow, which
-// this mirrors: same gesture, deleting a trip (cascades its stops) instead of a single stop, and
-// tapping opens the trip instead of a directions sheet.
+// this mirrors: same gesture, but deleting a whole trip (cascades its stops) is consequential
+// enough to gate behind a confirmation, so the swipe itself only ever reveals the delete button —
+// it never commits a delete on its own, however far or fast the drag.
 function rubberband(overshoot: number, dimension: number, constant = 0.55) {
   return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
 }
@@ -42,6 +42,7 @@ export function SwipeableTripCard({ trip }: { trip: Trip }) {
   const [hidden, setHidden] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>();
   const fadeTimer = useRef<ReturnType<typeof setTimeout>>();
   const wasDraggingRef = useRef(false);
@@ -122,9 +123,11 @@ export function SwipeableTripCard({ trip }: { trip: Trip }) {
     }
 
     let next = state.startValue + dx;
-    if (next < -COMMIT_DISTANCE) {
-      const overshoot = -COMMIT_DISTANCE - next;
-      next = -COMMIT_DISTANCE - rubberband(overshoot, COMMIT_DISTANCE);
+    if (next < -REVEAL_WIDTH) {
+      // No "full swipe deletes outright" here — past the reveal width it's just rubber-band
+      // resistance, since the only way to actually delete is confirming via the trash button.
+      const overshoot = -REVEAL_WIDTH - next;
+      next = -REVEAL_WIDTH - rubberband(overshoot, REVEAL_WIDTH);
     } else if (next > 0) {
       next = 0;
     }
@@ -146,9 +149,7 @@ export function SwipeableTripCard({ trip }: { trip: Trip }) {
     const velocity = performance.now() - state.lastT > STALE_VELOCITY_MS ? 0 : state.velocity;
 
     const value = x.get();
-    if (value < -COMMIT_DISTANCE + 1 || velocity < -VELOCITY_COMMIT) {
-      animateOutThenCommit(velocity);
-    } else if (value < -REVEAL_WIDTH / 2) {
+    if (value < -REVEAL_WIDTH / 2) {
       openRevealed(velocity);
     } else {
       close(velocity);
@@ -174,7 +175,7 @@ export function SwipeableTripCard({ trip }: { trip: Trip }) {
     <div className="relative overflow-hidden">
       <button
         type="button"
-        onClick={() => animateOutThenCommit()}
+        onClick={() => setConfirmOpen(true)}
         aria-hidden={!revealed}
         tabIndex={-1}
         className="absolute inset-y-0 right-0 flex items-center justify-center bg-[var(--color-destructive)] text-white"
@@ -217,6 +218,16 @@ export function SwipeableTripCard({ trip }: { trip: Trip }) {
         </div>
         <ChevronRightIcon className="h-4 w-4 shrink-0 text-[var(--color-label-tertiary)]" />
       </button>
+
+      {confirmOpen && (
+        <ConfirmDeleteSheet
+          title={`Delete "${trip.name}"?`}
+          message="This also deletes all of its stops. You'll have a few seconds to undo right after."
+          confirmLabel="Delete Trip"
+          onConfirm={() => animateOutThenCommit()}
+          onClose={() => setConfirmOpen(false)}
+        />
+      )}
     </div>
   );
 }
