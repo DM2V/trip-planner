@@ -1,5 +1,5 @@
 import { ListSection } from "@/components/ui/List";
-import { SwipeableStopRow } from "./SwipeableStopRow";
+import { StopRow } from "./StopRow";
 import type { Stop } from "@/types";
 
 interface StopListProps {
@@ -20,7 +20,7 @@ export function StopList({ tripId, stops }: StopListProps) {
   return (
     <ListSection>
       {stops.map((stop, index) => (
-        <SwipeableStopRow key={stop.id} tripId={tripId} stop={stop} position={index + 1} />
+        <StopRow key={stop.id} tripId={tripId} stop={stop} position={index + 1} />
       ))}
     </ListSection>
   );

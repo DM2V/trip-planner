@@ -4,8 +4,8 @@ import { useState } from "react";
 import { OpenInMapsSheet } from "@/components/trip/OpenInMapsSheet";
 import type { Stop } from "@/types";
 
-// Read-only counterpart to SwipeableStopRow for the public share page — no swipe gesture, just
-// tap to get directions.
+// Read-only counterpart to StopRow for the public share page — tap to get directions, no
+// delete button.
 export function SharedStopRow({ stop, position }: { stop: Stop; position: number }) {
   const [mapsSheetOpen, setMapsSheetOpen] = useState(false);
 
