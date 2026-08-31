@@ -114,18 +114,22 @@ body {
   }
 }
 
-/* Same translucent material as .nav-material, but for chrome floating directly on top of the map
-   (the back button / share row over MapView) — fixed light values, not the app's own light/dark
-   tokens. The basemap underneath is always light (CARTO Positron), so tinting this with the app's
-   dark-mode background would paint a muddy dark bar over bright map imagery instead of the frosted
-   glass look it's going for. Same reasoning as the fixed marker/popup colors in MapView.tsx. */
+/* Liquid Glass-style pill for chrome floating directly on top of the map (the back button / share
+   button over MapView) — fixed light values, not the app's own light/dark tokens. The basemap
+   underneath is always light (CARTO Positron), so tinting this with the app's dark-mode background
+   would paint a muddy dark shape over bright map imagery instead of actual glass. Same reasoning as
+   the fixed marker/popup colors in MapView.tsx.
+   Each control gets its own separate pill rather than one continuous bar, and stays mostly
+   see-through — real glass, not a solid card — with a bright top edge and a crisp thin border to
+   read as a refractive material catching light, plus a soft shadow to lift it off the map. */
 .map-chrome {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  /* A full-width floating surface reads as a flat sticker without some depth cue separating it
-     from the busy map behind it — a soft shadow is that cue. */
-  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 1px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -133,6 +137,8 @@ body {
     background: #f2f2f7;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
   }
 }
 

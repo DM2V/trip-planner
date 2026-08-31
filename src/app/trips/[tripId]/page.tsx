@@ -59,10 +59,10 @@ export default async function TripDetailPage({
       <div className="relative h-[42vh] w-full">
         <MapView markers={markers} routeGeometry={route?.geometry ?? null} />
 
-        <div className="map-chrome absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2 pb-2 pt-3">
+        <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-3 pt-3">
           <Link
             href="/trips"
-            className="-ml-2 flex min-h-[44px] items-center gap-0.5 rounded-full px-2 text-[1.0625rem] text-[#007aff]"
+            className="map-chrome flex min-h-[44px] items-center gap-0.5 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[#007aff]"
           >
             <ChevronLeftIcon className="h-5 w-5" />
             Trips
