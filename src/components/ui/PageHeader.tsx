@@ -11,7 +11,9 @@ interface PageHeaderProps {
 }
 
 // iOS nav bar: a 3-column row (back / centered small title / trailing action) for pushed
-// screens, or a big bold title below the row for top-level ("large title") screens.
+// screens, or a big bold title below the row for top-level ("large title") screens — where the
+// trailing action sits right next to the large title itself, at the same height, rather than in
+// the small row above it.
 export function PageHeader({ title, backHref, backLabel = "Back", large = false, trailing }: PageHeaderProps) {
   return (
     <header className="nav-material px-4 pt-3">
@@ -30,9 +32,14 @@ export function PageHeader({ title, backHref, backLabel = "Back", large = false,
         <div className="justify-self-center">
           {!large && <h1 className="truncate text-[1.0625rem] font-semibold">{title}</h1>}
         </div>
-        <div className="justify-self-end">{trailing}</div>
+        <div className="justify-self-end">{!large && trailing}</div>
       </div>
-      {large && <h1 className="pb-2 pt-1 text-[2.125rem] font-bold tracking-tight">{title}</h1>}
+      {large && (
+        <div className="flex items-center justify-between gap-3 pb-2 pt-1">
+          <h1 className="min-w-0 truncate text-[2.125rem] font-bold tracking-tight">{title}</h1>
+          {trailing}
+        </div>
+      )}
     </header>
   );
 }

@@ -11,8 +11,9 @@ export default function TripsLoading() {
         title="Trips"
         large
         trailing={
-          <span className="flex h-11 w-11 items-center justify-center text-[var(--color-accent)]">
-            <PlusIcon className="h-6 w-6" />
+          <span className="chrome-pill flex min-h-[44px] shrink-0 items-center gap-1 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[var(--color-accent)]">
+            <PlusIcon className="h-5 w-5" />
+            New Trip
           </span>
         }
       />
