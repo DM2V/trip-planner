@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// Free minimalist basemap style, no API key required.
-const CARTO_POSITRON_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+// Free basemap style, no API key required.
+const CARTO_VOYAGER_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 const ROUTE_SOURCE_ID = "trip-route";
 // Fixed hex values, not CSS vars: the basemap and its overlays render on WebGL canvas, not the
 // DOM, so they can't read the app's light/dark tokens. The basemap itself is always light, so
@@ -67,7 +67,7 @@ export function MapView({ markers, routeGeometry = null, readOnly = false }: Map
     const first = markers[0];
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: CARTO_POSITRON_STYLE,
+      style: CARTO_VOYAGER_STYLE,
       center: first ? [first.lng, first.lat] : [-73.9857, 40.7484],
       zoom: 12,
       interactive: !readOnly,
