@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
-import { TripCard } from "@/components/trip/TripCard";
+import { SwipeableTripCard } from "@/components/trip/SwipeableTripCard";
 import { ListSection } from "@/components/ui/List";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PlusIcon } from "@/components/ui/icons";
@@ -41,9 +41,9 @@ export default async function TripsPage() {
 
       <div className="flex flex-col gap-4 px-4">
         {trips && trips.length > 0 ? (
-          <ListSection>
+          <ListSection footer="Swipe left on a trip to delete it.">
             {trips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} />
+              <SwipeableTripCard key={trip.id} trip={trip} />
             ))}
           </ListSection>
         ) : (

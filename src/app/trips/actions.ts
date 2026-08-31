@@ -69,6 +69,18 @@ export async function deleteStop(tripId: string, stopId: string) {
   revalidatePath(`/trips/${tripId}`);
 }
 
+// Cascades to the trip's stops and trip_members (ON DELETE CASCADE in 0001_init.sql). RLS's
+// "trips: owner has full control" policy is what actually stops a non-owner from doing this —
+// this action doesn't check ownership itself.
+export async function deleteTrip(tripId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("trips").delete().eq("id", tripId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/trips");
+}
+
 // Called from the public /trips/[tripId]/share page, so the visitor isn't necessarily a trip
 // member yet — we verify the share_token ourselves (via the admin client) before writing,
 // same authorization the "trips: viewers can read" RLS policy would otherwise provide.
