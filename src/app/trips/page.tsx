@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { logout } from "@/app/(auth)/actions";
+import { TabBar } from "@/components/TabBar";
 import { TripCard } from "@/components/trip/TripCard";
 import { ListSection } from "@/components/ui/List";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PlusIcon } from "@/components/ui/icons";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function TripsPage() {
@@ -24,7 +23,7 @@ export default async function TripsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="flex min-h-dvh flex-col gap-6 pb-10">
+    <main className="flex min-h-dvh flex-col gap-6 pb-24">
       <PageHeader
         title="Trips"
         large
@@ -51,20 +50,9 @@ export default async function TripsPage() {
             No trips yet — tap + to create your first one.
           </p>
         )}
-
-        <div className="flex flex-col gap-2">
-          <p className="px-1 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
-            Appearance
-          </p>
-          <ThemeToggle />
-        </div>
-
-        <form action={logout}>
-          <button type="submit" className="text-[0.9375rem] text-[var(--color-destructive)]">
-            Log out
-          </button>
-        </form>
       </div>
+
+      <TabBar />
     </main>
   );
 }

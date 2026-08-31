@@ -1,3 +1,4 @@
+import { TabBar } from "@/components/TabBar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ListSection } from "@/components/ui/List";
 import { PlusIcon } from "@/components/ui/icons";
@@ -6,7 +7,7 @@ import { PlusIcon } from "@/components/ui/icons";
 // real list, so nothing jumps once the data lands.
 export default function TripsLoading() {
   return (
-    <main className="flex min-h-dvh flex-col gap-6 pb-10">
+    <main className="flex min-h-dvh flex-col gap-6 pb-24">
       <PageHeader
         title="Trips"
         large
@@ -30,6 +31,8 @@ export default function TripsLoading() {
           ))}
         </ListSection>
       </div>
+
+      <TabBar />
     </main>
   );
 }
