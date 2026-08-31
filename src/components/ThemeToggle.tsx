@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CheckIcon } from "@/components/ui/icons";
 
 type ThemePreference = "system" | "light" | "dark";
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: "system", label: "System" },
   { value: "light", label: "Light" },
   { value: "dark", label: "Dark" },
+  { value: "system", label: "System" },
 ];
 
 function applyTheme(preference: ThemePreference) {
@@ -32,8 +33,39 @@ function applyTheme(preference: ThemePreference) {
   }
 }
 
+// Fixed light/dark swatch colors, not the app's own theme tokens — this has to depict what each
+// mode literally looks like regardless of which one is currently active, the same reasoning as
+// the fixed colors in MapView.tsx.
+function ThemePreviewSwatch({ variant }: { variant: ThemePreference }) {
+  if (variant === "system") {
+    return (
+      <div className="flex h-full w-full">
+        <div className="flex h-full w-1/2 flex-col gap-1 bg-[#f2f2f7] p-2">
+          <div className="h-1.5 w-full rounded-full bg-[#c7c7cc]" />
+          <div className="h-1.5 w-2/3 rounded-full bg-[#d1d1d6]" />
+        </div>
+        <div className="flex h-full w-1/2 flex-col gap-1 bg-[#1c1c1e] p-2">
+          <div className="h-1.5 w-full rounded-full bg-[#48484a]" />
+          <div className="h-1.5 w-2/3 rounded-full bg-[#3a3a3c]" />
+        </div>
+      </div>
+    );
+  }
+
+  const light = variant === "light";
+  return (
+    <div className="flex h-full w-full flex-col gap-1 p-2" style={{ background: light ? "#f2f2f7" : "#1c1c1e" }}>
+      <div className="h-1.5 w-full rounded-full" style={{ background: light ? "#c7c7cc" : "#48484a" }} />
+      <div className="h-1.5 w-2/3 rounded-full" style={{ background: light ? "#d1d1d6" : "#3a3a3c" }} />
+      <div className="h-1.5 w-1/2 rounded-full" style={{ background: light ? "#d1d1d6" : "#3a3a3c" }} />
+    </div>
+  );
+}
+
 // In-app override for the OS-level light/dark preference — most iOS apps just follow the
-// system, but some (like this one) also offer a manual switch. Persisted per device.
+// system, but some (like this one) also offer a manual switch. Persisted per device. Modeled on
+// Settings > Display & Brightness's own appearance picker: a small live preview of each mode
+// beats reading plain text labels.
 export function ThemeToggle() {
   const [preference, setPreference] = useState<ThemePreference>("system");
 
@@ -49,24 +81,41 @@ export function ThemeToggle() {
   }, []);
 
   return (
-    <div className="flex gap-1 rounded-xl bg-[var(--color-fill-secondary)] p-1">
-      {OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => {
-            setPreference(option.value);
-            applyTheme(option.value);
-          }}
-          className={`flex-1 rounded-lg py-1.5 text-[0.8125rem] font-medium transition-colors ${
-            preference === option.value
-              ? "bg-[var(--color-bg-elevated)] text-[var(--color-label)]"
-              : "text-[var(--color-label-secondary)]"
-          }`}
-        >
-          {option.label}
-        </button>
-      ))}
+    <div className="grid grid-cols-3 gap-3">
+      {OPTIONS.map((option) => {
+        const selected = preference === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => {
+              setPreference(option.value);
+              applyTheme(option.value);
+            }}
+            className="flex flex-col items-center gap-1.5"
+          >
+            <div
+              className={`relative h-14 w-full overflow-hidden rounded-xl border-2 transition-colors ${
+                selected ? "border-[var(--color-accent)]" : "border-transparent"
+              }`}
+            >
+              <ThemePreviewSwatch variant={option.value} />
+              {selected && (
+                <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-accent)] text-white">
+                  <CheckIcon className="h-2.5 w-2.5" />
+                </span>
+              )}
+            </div>
+            <span
+              className={`text-[0.8125rem] font-medium ${
+                selected ? "text-[var(--color-label)]" : "text-[var(--color-label-secondary)]"
+              }`}
+            >
+              {option.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
