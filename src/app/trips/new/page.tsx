@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { createTrip } from "@/app/trips/actions";
 import { PlaceSearchInput } from "@/components/trip/PlaceSearchInput";
-import { Button } from "@/components/ui/Button";
 import { FormRow } from "@/components/ui/FormRow";
 import { ListSection } from "@/components/ui/List";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { LocationIcon } from "@/components/ui/icons";
 import { useGeolocation } from "@/hooks/useGeolocation";
 
@@ -88,7 +88,7 @@ export default function NewTripPage({
         <input type="hidden" name="origin_lat" value={resolvedOrigin.lat} />
         <input type="hidden" name="origin_lng" value={resolvedOrigin.lng} />
 
-        <Button type="submit">Create Trip</Button>
+        <SubmitButton pendingLabel="Creating...">Create Trip</SubmitButton>
       </form>
     </main>
   );

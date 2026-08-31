@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-import { Button } from "@/components/ui/Button";
 import { FormRow } from "@/components/ui/FormRow";
 import { ListSection } from "@/components/ui/List";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { signup } from "../actions";
 
 export default function SignupPage({
@@ -51,7 +51,7 @@ export default function SignupPage({
           </FormRow>
         </ListSection>
 
-        <Button type="submit">Sign Up</Button>
+        <SubmitButton pendingLabel="Signing up...">Sign Up</SubmitButton>
       </form>
 
       <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">

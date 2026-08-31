@@ -9,7 +9,9 @@ import { ChevronRightIcon, TrashIcon } from "@/components/ui/icons";
 import type { Trip } from "@/types";
 
 const REVEAL_WIDTH = 96; // px the reveal panel behind the card occupies when resting open
-const MOVE_THRESHOLD = 10; // px of hysteresis before a press counts as a drag rather than a click
+const MOVE_THRESHOLD = 18; // px of hysteresis before a press counts as a drag rather than a click — a
+// real tap (finger or trackpad) almost always has a few px of incidental lateral movement; too low
+// a threshold here makes the reveal panel flash briefly on an ordinary tap before springing shut.
 const STALE_VELOCITY_MS = 100; // if the finger held still this long before lifting, ignore the last recorded velocity
 const REDUCED_MOTION_FADE_MS = 180;
 const UNDO_WINDOW_MS = 4000;
