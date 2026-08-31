@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AddStopField } from "@/components/trip/AddStopField";
 import { CalculateRouteButton } from "@/components/trip/CalculateRouteButton";
 import { ShareTripButton } from "@/components/trip/ShareTripButton";
 import { StopList } from "@/components/trip/StopList";
 import { MapView, type MapMarker } from "@/components/map/MapView";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { ChevronLeftIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function TripDetailPage({
@@ -55,19 +56,24 @@ export default async function TripDetailPage({
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <div className="h-[42vh] w-full">
+      <div className="relative h-[42vh] w-full">
         <MapView markers={markers} routeGeometry={route?.geometry ?? null} />
+
+        <div className="nav-material absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2 pb-2 pt-3">
+          <Link
+            href="/trips"
+            className="-ml-2 flex min-h-[44px] items-center gap-0.5 rounded-full px-2 text-[1.0625rem] text-[var(--color-accent)]"
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+            Trips
+          </Link>
+          <ShareTripButton tripId={trip.id} shareToken={trip.share_token} />
+        </div>
       </div>
 
-      <PageHeader
-        title={trip.name}
-        backHref="/trips"
-        backLabel="Trips"
-        trailing={<ShareTripButton tripId={trip.id} shareToken={trip.share_token} />}
-      />
-
-      <div className="flex flex-1 flex-col gap-6 px-4 pb-10">
+      <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
         <div>
+          <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
           <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
             {trip.start_date} — {trip.end_date} · from {trip.origin_label}
           </p>
