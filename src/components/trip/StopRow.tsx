@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { deleteStop } from "@/app/trips/actions";
+import { ConfirmDeleteSheet } from "@/components/trip/ConfirmDeleteSheet";
 import { OpenInMapsSheet } from "@/components/trip/OpenInMapsSheet";
 import { TrashIcon } from "@/components/ui/icons";
 import type { Stop } from "@/types";
@@ -21,6 +22,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
   const [hidden, setHidden] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
   const [mapsSheetOpen, setMapsSheetOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>();
 
   // If the row unmounts (navigated away) before the undo window closes, cancel the pending
@@ -77,7 +79,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
         </button>
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => setConfirmOpen(true)}
           aria-label={`Remove ${stop.name}`}
           className="flex h-11 w-11 shrink-0 items-center justify-center pr-4 text-[var(--color-destructive)] active:opacity-50"
         >
@@ -91,6 +93,15 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
           lat={stop.lat}
           lng={stop.lng}
           onClose={() => setMapsSheetOpen(false)}
+        />
+      )}
+
+      {confirmOpen && (
+        <ConfirmDeleteSheet
+          title={`Delete "${stop.name}"?`}
+          confirmLabel="Delete Stop"
+          onConfirm={handleDelete}
+          onClose={() => setConfirmOpen(false)}
         />
       )}
     </>
