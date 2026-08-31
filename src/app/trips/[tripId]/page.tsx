@@ -59,7 +59,7 @@ export default async function TripDetailPage({
       <div className="relative h-[42vh] w-full">
         <MapView markers={markers} routeGeometry={route?.geometry ?? null} />
 
-        <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-3 pt-3">
+        <div className="absolute inset-x-0 top-0 z-10 flex items-center px-3 pt-3">
           <Link
             href="/trips"
             className="map-chrome flex min-h-[44px] items-center gap-0.5 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[#007aff]"
@@ -67,22 +67,24 @@ export default async function TripDetailPage({
             <ChevronLeftIcon className="h-5 w-5" />
             Trips
           </Link>
-          <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
         </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
-        <div>
-          <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-          <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-            {trip.start_date} — {trip.end_date} · from {trip.origin_label}
-          </p>
-          {route && (
-            <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
-              {(route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-              {Math.round(route.durationSeconds / 60)} min walking
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
+            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+              {trip.start_date} — {trip.end_date} · from {trip.origin_label}
             </p>
-          )}
+            {route && (
+              <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
+                {(route.distanceMeters / 1000).toFixed(1)} km ·{" "}
+                {Math.round(route.durationSeconds / 60)} min walking
+              </p>
+            )}
+          </div>
+          <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
         </div>
 
         <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
