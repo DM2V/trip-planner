@@ -48,18 +48,23 @@ function createMarkerElement(point: MapMarker): HTMLDivElement {
   return el;
 }
 
-// One label per leg, positioned at the straight-line midpoint between the two stops it connects
+// One label per leg, positioned at the straight-line midpoint between the two points it connects
 // (not the midpoint along the actual road/path, which isn't worth the extra plumbing — every
 // route here is short enough within a city that the straight-line midpoint sits right by the
-// route line anyway).
+// route line anyway). The route is a round trip (see getOptimizedRoute), so the last leg goes
+// from the last stop back to the origin — closing the loop here the same way lets that leg's
+// label position fall out of the same from/to pairing as every other one, instead of a special
+// case. Routes calculated before the return leg existed just have one fewer entry in `legs`, so
+// the loop below naturally stops short of that closing pair without any extra handling.
 function buildLegLabels(markers: MapMarker[], legs: RouteLeg[] | null): GeoJSON.FeatureCollection {
-  if (!legs) return EMPTY_FEATURE_COLLECTION;
+  if (!legs || markers.length === 0) return EMPTY_FEATURE_COLLECTION;
 
-  const count = Math.min(legs.length, markers.length - 1);
+  const loopPoints = [...markers, markers[0]];
+  const count = Math.min(legs.length, loopPoints.length - 1);
   const features: GeoJSON.Feature<GeoJSON.Point>[] = [];
   for (let i = 0; i < count; i++) {
-    const from = markers[i];
-    const to = markers[i + 1];
+    const from = loopPoints[i];
+    const to = loopPoints[i + 1];
     const leg = legs[i];
     features.push({
       type: "Feature",

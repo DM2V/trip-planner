@@ -8,7 +8,7 @@ import { RouteSummary } from "@/components/trip/RouteSummary";
 import { ShareTripButton } from "@/components/trip/ShareTripButton";
 import { StopList } from "@/components/trip/StopList";
 import { type MapMarker } from "@/components/map/MapView";
-import { ChevronLeftIcon } from "@/components/ui/icons";
+import { ChevronLeftIcon, EditIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
@@ -89,12 +89,27 @@ export default async function TripDetailPage({
               </p>
               <RouteSummary />
             </div>
-            <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
+            <div className="flex shrink-0 items-center">
+              <Link
+                href={`/trips/${trip.id}/edit`}
+                aria-label="Edit trip"
+                className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+              >
+                <EditIcon className="h-5 w-5" />
+              </Link>
+              <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
+            </div>
           </div>
 
           <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
 
-          <StopList tripId={trip.id} stops={stops ?? []} />
+          <StopList
+            tripId={trip.id}
+            stops={stops ?? []}
+            originLabel={trip.origin_label}
+            originLat={trip.origin_lat}
+            originLng={trip.origin_lng}
+          />
 
           <CalculateRouteButton tripId={trip.id} disabled={!stops || stops.length === 0} />
         </div>

@@ -42,6 +42,41 @@ export async function createTrip(formData: FormData) {
   redirect(`/trips/${trip.id}`);
 }
 
+export async function updateTrip(tripId: string, formData: FormData) {
+  const supabase = createClient();
+
+  const { data: trip } = await supabase
+    .from("trips")
+    .select("origin_lat, origin_lng")
+    .eq("id", tripId)
+    .single();
+  if (!trip) redirect("/trips");
+
+  const originLat = Number(formData.get("origin_lat"));
+  const originLng = Number(formData.get("origin_lng"));
+  // A changed origin invalidates any calculated route (every leg and the geometry itself were
+  // computed from the old one) — same reasoning as clearing it when a stop is added or removed.
+  const originChanged = originLat !== trip.origin_lat || originLng !== trip.origin_lng;
+
+  const { error } = await supabase
+    .from("trips")
+    .update({
+      name: formData.get("name") as string,
+      origin_label: formData.get("origin_label") as string,
+      origin_lat: originLat,
+      origin_lng: originLng,
+      ...(originChanged ? { optimized_route: null } : {}),
+    })
+    .eq("id", tripId);
+
+  if (error) {
+    redirect(`/trips/${tripId}/edit?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/trips/${tripId}`);
+  redirect(`/trips/${tripId}`);
+}
+
 export async function addStop(
   tripId: string,
   place: { label: string; lat: number; lng: number },
@@ -171,9 +206,12 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
       "driving-car",
     );
 
+    // Origin appears at both ends of the sequence — same round-trip reasoning as driving's
+    // start/end above — so ORS Directions' segments come back with one extra leg (the return
+    // trip) for free, no separate call needed.
     const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
     const walking = await getRouteForSequence(
-      [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng }))],
+      [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })), origin],
       "foot-walking",
     );
 

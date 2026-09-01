@@ -1,4 +1,5 @@
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
+import { ReturnToOriginRow } from "@/components/trip/ReturnToOriginRow";
 import { RouteLegConnector } from "@/components/trip/RouteLegConnector";
 import { RouteMap } from "@/components/trip/RouteMap";
 import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
@@ -104,6 +105,13 @@ export default async function SharedTripPage({
               <RouteLegConnector key={`${stop.id}-leg`} position={index + 1} />,
               <SharedStopRow key={stop.id} stop={stop} position={index + 1} />,
             ])}
+            <RouteLegConnector key="return-leg" position={(stops ?? []).length + 1} />
+            <ReturnToOriginRow
+              originLabel={trip.origin_label}
+              originLat={trip.origin_lat}
+              originLng={trip.origin_lng}
+              stops={stops ?? []}
+            />
           </ListSection>
 
           {user ? (

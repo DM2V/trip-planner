@@ -83,6 +83,14 @@ export function WalkIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
+export function EditIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg {...base} strokeWidth={2} className={className}>

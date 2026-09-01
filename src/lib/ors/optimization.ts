@@ -16,9 +16,11 @@ export interface RouteMetrics {
   distanceMeters: number;
   durationSeconds: number;
   geometry: GeoJSON.Feature<GeoJSON.LineString>;
-  // One entry per stop, in visiting order: legs[0] is origin -> first stop, legs[i] is the
-  // previous stop -> stop i. Optional because routes calculated before this field existed are
-  // still sitting in the database without it.
+  // One entry per stop, in visiting order, plus one final entry for the trip back to the origin:
+  // legs[0] is origin -> first stop, legs[i] is the previous stop -> stop i, and legs[stops.length]
+  // is the last stop -> back to the origin. Optional because routes calculated before this field
+  // existed (or before the return leg existed) are still sitting in the database without it, or
+  // without that last entry.
   legs?: RouteLeg[];
 }
 
@@ -59,8 +61,11 @@ async function throwForFailedResponse(response: Response, apiName: string): Prom
 }
 
 // Phase 3: calls the OpenRouteService Optimization API (VROOM-based, solves the TSP) with the
-// origin as the vehicle's fixed starting point and each stop as a job to visit. Used for the
-// primary (driving) profile only — it's the one that picks the visiting order.
+// origin as both the vehicle's start AND end point, so it solves for a round trip (visit every
+// stop and come back) rather than a one-way path — the order that's best for "go out and come
+// home" isn't always the same as the order that's best for "just go out," so this changes what
+// "optimal" means, not just which numbers get reported afterward. Used for the primary (driving)
+// profile only — it's the one that picks the visiting order.
 export async function getOptimizedRoute(
   origin: LatLng,
   stops: LatLng[],
@@ -83,6 +88,7 @@ export async function getOptimizedRoute(
           id: 1,
           profile,
           start: [origin.lng, origin.lat],
+          end: [origin.lng, origin.lat],
         },
       ],
       options: { g: true },
@@ -97,12 +103,15 @@ export async function getOptimizedRoute(
   const route = data.routes[0];
 
   // VROOM's per-step distance/duration are cumulative from the route's start, not deltas — so
-  // each leg is the difference between one job step and the one before it (the vehicle's "start"
-  // step has distance/duration 0, which is exactly the base case the first job step needs).
-  const jobSteps = route.steps.filter((step: { type: string }) => step.type === "job");
-  const order = jobSteps.map((step: { id: number }) => step.id - 1);
-  const legs: RouteLeg[] = jobSteps.map((step: { distance: number; duration: number }, i: number) => {
-    const previous = i === 0 ? { distance: 0, duration: 0 } : jobSteps[i - 1];
+  // each leg is the difference between one step and the one before it (the vehicle's "start" step
+  // has distance/duration 0, which is exactly the base case the first job step needs). The "end"
+  // step (the return to origin) is included here as the final leg, right after the last job.
+  const relevantSteps = route.steps.filter((step: { type: string }) => step.type === "job" || step.type === "end");
+  const order = relevantSteps
+    .filter((step: { type: string }) => step.type === "job")
+    .map((step: { id: number }) => step.id - 1);
+  const legs: RouteLeg[] = relevantSteps.map((step: { distance: number; duration: number }, i: number) => {
+    const previous = i === 0 ? { distance: 0, duration: 0 } : relevantSteps[i - 1];
     return {
       distanceMeters: step.distance - previous.distance,
       durationSeconds: step.duration - previous.duration,
