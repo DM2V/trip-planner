@@ -215,10 +215,21 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
     // start/end above — so ORS Directions' segments come back with one extra leg (the return
     // trip) for free, no separate call needed.
     const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
-    const walking = await getRouteForSequence(
-      [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })), origin],
-      "foot-walking",
-    );
+
+    // Walking failing shouldn't block saving the driving route that already succeeded — e.g. an
+    // origin far enough out (an airport, say) can have a perfectly good driving route with no
+    // walkable path at all, which ORS reports as its own "no route between these points" error
+    // (distinct from UnroutableCoordinateError's "can't snap this one point to the network").
+    // Walking is just omitted from the saved route in that case, not treated as a failure.
+    let walking = null;
+    try {
+      walking = await getRouteForSequence(
+        [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })), origin],
+        "foot-walking",
+      );
+    } catch (walkingError) {
+      console.error("calculateRoute: walking leg failed, saving driving-only route:", walkingError);
+    }
 
     const routes: OptimizedRoutes = {
       "driving-car": {
@@ -227,7 +238,7 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
         geometry: driving.geometry,
         legs: driving.legs,
       },
-      "foot-walking": walking,
+      ...(walking ? { "foot-walking": walking } : {}),
     };
 
     await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
@@ -247,6 +258,9 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
         error: `Can't calculate a route — ${place} isn't reachable by road (it may be on an island, or otherwise disconnected from the road network). Try removing it and recalculating.`,
       };
     }
+    // Next.js's Server Action redaction (see comment above) means this is the only place this
+    // ever gets logged — without it, a failure here is completely invisible from the outside.
+    console.error("calculateRoute failed:", err);
     return { error: "Could not calculate the route. Please try again in a moment." };
   }
 }

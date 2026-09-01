@@ -23,8 +23,17 @@ export function RouteProfileProvider({
   children: ReactNode;
 }) {
   const [profile, setProfile] = useState<TravelProfile>("driving-car");
+  // Walking can fail to calculate at all (e.g. an origin far enough out — an airport, say — that
+  // no walking route exists) while driving still succeeds — see calculateRoute. If the selected
+  // profile has no data, every consumer (map, summary, stop rows) should fall back to whichever
+  // profile actually does, rather than each re-deriving that fallback — and rather than resetting
+  // the underlying selection, so it picks back up if that profile becomes available again later.
+  const effectiveProfile = routes?.[profile] ? profile : routes?.["driving-car"] ? "driving-car" : profile;
+
   return (
-    <RouteProfileContext.Provider value={{ profile, setProfile, routes }}>{children}</RouteProfileContext.Provider>
+    <RouteProfileContext.Provider value={{ profile: effectiveProfile, setProfile, routes }}>
+      {children}
+    </RouteProfileContext.Provider>
   );
 }
 
