@@ -7,23 +7,28 @@ const ORS_API_KEY = process.env.ORS_API_KEY;
 // walkable/driveable trip itinerary.
 export type TravelProfile = "driving-car" | "foot-walking";
 
-export interface OptimizedRoute {
-  order: number[];
+export interface RouteMetrics {
   distanceMeters: number;
   durationSeconds: number;
-  // Optional because routes calculated before this field existed are still sitting in the
-  // database without it.
-  profile?: TravelProfile;
   geometry: GeoJSON.Feature<GeoJSON.LineString>;
 }
 
+// Keyed by profile so a trip can hold both a driving and a walking route at once, letting the
+// viewer toggle between them instead of picking one before calculating.
+export type OptimizedRoutes = Partial<Record<TravelProfile, RouteMetrics>>;
+
+interface VroomRoute extends RouteMetrics {
+  order: number[];
+}
+
 // Phase 3: calls the OpenRouteService Optimization API (VROOM-based, solves the TSP) with the
-// origin as the vehicle's fixed starting point and each stop as a job to visit.
+// origin as the vehicle's fixed starting point and each stop as a job to visit. Used for the
+// primary (driving) profile only — it's the one that picks the visiting order.
 export async function getOptimizedRoute(
   origin: LatLng,
   stops: LatLng[],
   profile: TravelProfile,
-): Promise<OptimizedRoute> {
+): Promise<VroomRoute> {
   // api.openrouteservice.org was shut off on 2026-08-24 in favor of api.heigit.org (unified HeiGIT API).
   const response = await fetch("https://api.heigit.org/vroom/v0", {
     method: "POST",
@@ -64,7 +69,6 @@ export async function getOptimizedRoute(
     order,
     distanceMeters: route.distance,
     durationSeconds: route.duration,
-    profile,
     geometry: {
       type: "Feature",
       properties: {},
@@ -73,5 +77,32 @@ export async function getOptimizedRoute(
         coordinates: decoded.map(([lat, lng]) => [lng, lat]),
       },
     },
+  };
+}
+
+// Distance/duration/geometry for a fixed sequence of waypoints, via the ORS Directions API. Used
+// to get a second profile's numbers (e.g. walking) for the exact same visiting order the primary
+// profile's optimization already picked, instead of letting the two profiles disagree on order.
+export async function getRouteForSequence(waypoints: LatLng[], profile: TravelProfile): Promise<RouteMetrics> {
+  const response = await fetch(`https://api.heigit.org/openrouteservice/v2/directions/${profile}/geojson`, {
+    method: "POST",
+    headers: {
+      Authorization: ORS_API_KEY ?? "",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ coordinates: waypoints.map((point) => [point.lng, point.lat]) }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouteService Directions API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const feature = data.features[0];
+
+  return {
+    distanceMeters: feature.properties.summary.distance,
+    durationSeconds: feature.properties.summary.duration,
+    geometry: { type: "Feature", properties: {}, geometry: feature.geometry },
   };
 }

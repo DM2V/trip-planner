@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getOptimizedRoute, type TravelProfile } from "@/lib/ors/optimization";
+import { getOptimizedRoute, getRouteForSequence, type OptimizedRoutes } from "@/lib/ors/optimization";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -112,11 +112,7 @@ export async function joinSharedTrip(tripId: string, token: string) {
   revalidatePath("/trips");
 }
 
-export async function calculateRoute(tripId: string, profile: TravelProfile) {
-  if (profile !== "driving-car" && profile !== "foot-walking") {
-    throw new Error("Invalid travel profile");
-  }
-
+export async function calculateRoute(tripId: string) {
   const supabase = createClient();
 
   const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single();
@@ -132,16 +128,36 @@ export async function calculateRoute(tripId: string, profile: TravelProfile) {
     throw new Error("Add at least one stop before calculating a route");
   }
 
-  const route = await getOptimizedRoute(
-    { lat: trip.origin_lat, lng: trip.origin_lng },
+  const origin = { lat: trip.origin_lat, lng: trip.origin_lng };
+
+  // Driving picks the visiting order (it's the default view); walking then reuses that exact
+  // order via a plain Directions call instead of re-optimizing, so the two profiles never
+  // disagree on which stop comes next — only on how long each leg takes.
+  const driving = await getOptimizedRoute(
+    origin,
     stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
-    profile,
+    "driving-car",
   );
 
-  await supabase.from("trips").update({ optimized_route: route }).eq("id", tripId);
+  const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
+  const walking = await getRouteForSequence(
+    [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng }))],
+    "foot-walking",
+  );
+
+  const routes: OptimizedRoutes = {
+    "driving-car": {
+      distanceMeters: driving.distanceMeters,
+      durationSeconds: driving.durationSeconds,
+      geometry: driving.geometry,
+    },
+    "foot-walking": walking,
+  };
+
+  await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
 
   await Promise.all(
-    route.order.map((stopIndex: number, visitPosition: number) =>
+    driving.order.map((stopIndex: number, visitPosition: number) =>
       supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
     ),
   );

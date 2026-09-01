@@ -1,10 +1,13 @@
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
+import { RouteMap } from "@/components/trip/RouteMap";
+import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
+import { RouteSummary } from "@/components/trip/RouteSummary";
 import { SharedStopRow } from "@/components/trip/SharedStopRow";
-import { MapView, type MapMarker } from "@/components/map/MapView";
+import { type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { formatDuration, travelModeLabel } from "@/lib/utils";
+import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
 function InvalidLink() {
   return (
@@ -61,56 +64,54 @@ export default async function SharedTripPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  const routes: OptimizedRoutes | null = trip.optimized_route;
+
   return (
-    <main className="flex min-h-dvh flex-col">
-      <div className="h-[42vh] w-full">
-        <MapView markers={markers} routeGeometry={trip.optimized_route?.geometry ?? null} readOnly />
-      </div>
+    <RouteProfileProvider routes={routes}>
+      <main className="flex min-h-dvh flex-col">
+        <div className="h-[42vh] w-full">
+          <RouteMap markers={markers} readOnly />
+        </div>
 
-      <header className="nav-material flex h-11 items-center px-4">
-        <a href={user ? "/trips" : "/"} className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">
-          Trip Planner
-        </a>
-      </header>
+        <header className="nav-material flex h-11 items-center px-4">
+          <a href={user ? "/trips" : "/"} className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">
+            Trip Planner
+          </a>
+        </header>
 
-      <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
-        <div>
-          <p className="text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
-            Shared trip
-          </p>
-          <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-          <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-            {trip.start_date} — {trip.end_date} · from {trip.origin_label}
-          </p>
-          {trip.optimized_route && (
-            <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
-              {(trip.optimized_route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-              {formatDuration(trip.optimized_route.durationSeconds)}{" "}
-              {travelModeLabel(trip.optimized_route.profile)}
+        <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
+          <div>
+            <p className="text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
+              Shared trip
+            </p>
+            <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
+            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+              {trip.start_date} — {trip.end_date} · from {trip.origin_label}
+            </p>
+            <RouteSummary />
+          </div>
+
+          <ListSection>
+            {(stops ?? []).map((stop, index) => (
+              <SharedStopRow key={stop.id} stop={stop} position={index + 1} />
+            ))}
+          </ListSection>
+
+          {user ? (
+            <JoinTripButton tripId={trip.id} token={trip.share_token} />
+          ) : (
+            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+              <a
+                href={`/login?message=${encodeURIComponent("Log in to save this trip to your list.")}`}
+                className="font-medium text-[var(--color-accent)]"
+              >
+                Log in
+              </a>{" "}
+              to save this trip to your list.
             </p>
           )}
         </div>
-
-        <ListSection>
-          {(stops ?? []).map((stop, index) => (
-            <SharedStopRow key={stop.id} stop={stop} position={index + 1} />
-          ))}
-        </ListSection>
-
-        {user ? (
-          <JoinTripButton tripId={trip.id} token={trip.share_token} />
-        ) : (
-          <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-            <a
-              href={`/login?message=${encodeURIComponent("Log in to save this trip to your list.")}`}
-              className="font-medium text-[var(--color-accent)]"
-            >
-              Log in
-            </a>{" "}
-            to save this trip to your list.
-          </p>
-        )}
-      </div>
-    </main>
+      </main>
+    </RouteProfileProvider>
   );
 }

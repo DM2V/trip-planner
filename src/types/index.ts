@@ -1,4 +1,4 @@
-import type { OptimizedRoute } from "@/lib/ors/optimization";
+import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
 export interface LatLng {
   lat: number;
@@ -14,7 +14,7 @@ export interface Trip {
   origin_label: string;
   origin_lat: number;
   origin_lng: number;
-  optimized_route: OptimizedRoute | null;
+  optimized_route: OptimizedRoutes | null;
   share_token: string;
   created_at: string;
 }

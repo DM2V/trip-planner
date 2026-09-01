@@ -1,13 +1,5 @@
-import type { TravelProfile } from "@/lib/ors/optimization";
-
 export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-// Routes calculated before the driving/walking toggle existed have no `profile` field saved —
-// they were all driving-car, so that's the fallback for undefined.
-export function travelModeLabel(profile: TravelProfile | undefined) {
-  return profile === "foot-walking" ? "walking" : "driving";
 }
 
 // Formats a route duration as "1h 30m" (Apple/Google Maps style), dropping whichever unit is

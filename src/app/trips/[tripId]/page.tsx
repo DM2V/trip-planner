@@ -2,12 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AddStopField } from "@/components/trip/AddStopField";
 import { CalculateRouteButton } from "@/components/trip/CalculateRouteButton";
+import { RouteMap } from "@/components/trip/RouteMap";
+import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
+import { RouteSummary } from "@/components/trip/RouteSummary";
 import { ShareTripButton } from "@/components/trip/ShareTripButton";
 import { StopList } from "@/components/trip/StopList";
-import { MapView, type MapMarker } from "@/components/map/MapView";
+import { type MapMarker } from "@/components/map/MapView";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
-import { formatDuration, travelModeLabel } from "@/lib/utils";
+import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
 export default async function TripDetailPage({
   params,
@@ -53,47 +56,44 @@ export default async function TripDetailPage({
     })),
   ];
 
-  const route = trip.optimized_route;
+  const routes: OptimizedRoutes | null = trip.optimized_route;
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      <div className="relative h-[42vh] w-full">
-        <MapView markers={markers} routeGeometry={route?.geometry ?? null} />
+    <RouteProfileProvider routes={routes}>
+      <main className="flex min-h-dvh flex-col">
+        <div className="relative h-[42vh] w-full">
+          <RouteMap markers={markers} />
 
-        <div className="absolute inset-x-0 top-0 z-10 flex items-center px-3 pt-3">
-          <Link
-            href="/trips"
-            className="map-chrome flex min-h-[44px] items-center gap-0.5 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[#007aff]"
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-            Trips
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-              {trip.start_date} — {trip.end_date} · from {trip.origin_label}
-            </p>
-            {route && (
-              <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
-                {(route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-                {formatDuration(route.durationSeconds)} {travelModeLabel(route.profile)}
-              </p>
-            )}
+          <div className="absolute inset-x-0 top-0 z-10 flex items-center px-3 pt-3">
+            <Link
+              href="/trips"
+              className="map-chrome flex min-h-[44px] items-center gap-0.5 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[#007aff]"
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+              Trips
+            </Link>
           </div>
-          <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
         </div>
 
-        <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
+        <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
+              <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+                {trip.start_date} — {trip.end_date} · from {trip.origin_label}
+              </p>
+              <RouteSummary />
+            </div>
+            <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
+          </div>
 
-        <StopList tripId={trip.id} stops={stops ?? []} />
+          <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
 
-        <CalculateRouteButton tripId={trip.id} disabled={!stops || stops.length === 0} />
-      </div>
-    </main>
+          <StopList tripId={trip.id} stops={stops ?? []} />
+
+          <CalculateRouteButton tripId={trip.id} disabled={!stops || stops.length === 0} />
+        </div>
+      </main>
+    </RouteProfileProvider>
   );
 }
