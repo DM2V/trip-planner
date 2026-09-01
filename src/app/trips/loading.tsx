@@ -1,10 +1,11 @@
 import { TabBar } from "@/components/TabBar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ListSection } from "@/components/ui/List";
-import { PlusIcon } from "@/components/ui/icons";
 
 // Next.js renders this automatically while the trips list is being fetched — same shape as the
-// real list, so nothing jumps once the data lands.
+// real list, so nothing jumps once the data lands. This is also the PWA's start_url, so it's the
+// very first thing shown when opening the app from the home screen — the spinner in place of the
+// "New Trip" pill (not yet interactive anyway) doubles as that launch moment's loading cue.
 export default function TripsLoading() {
   return (
     <main className="flex min-h-dvh flex-col gap-6 pb-24">
@@ -12,10 +13,7 @@ export default function TripsLoading() {
         title="Trips"
         large
         trailing={
-          <span className="chrome-pill flex min-h-[44px] shrink-0 items-center gap-1 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[var(--color-accent)]">
-            <PlusIcon className="h-5 w-5" />
-            New Trip
-          </span>
+          <span className="h-6 w-6 shrink-0 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
         }
       />
 
