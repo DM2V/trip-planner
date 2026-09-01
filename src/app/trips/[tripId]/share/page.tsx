@@ -5,6 +5,7 @@ import { RouteMap } from "@/components/trip/RouteMap";
 import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
 import { RouteSummary } from "@/components/trip/RouteSummary";
 import { SharedStopRow } from "@/components/trip/SharedStopRow";
+import { TripInfoRows } from "@/components/trip/TripInfoRows";
 import { type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -94,9 +95,7 @@ export default async function SharedTripPage({
               Shared trip
             </p>
             <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-              {trip.start_date} — {trip.end_date} · from {trip.origin_label}
-            </p>
+            <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
             <RouteSummary />
           </div>
 

@@ -108,6 +108,15 @@ export function CheckIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
+export function CalendarIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+    </svg>
+  );
+}
+
 export function SettingsIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg {...base} strokeWidth={2} className={className}>

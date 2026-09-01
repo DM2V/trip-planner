@@ -7,6 +7,7 @@ import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
 import { RouteSummary } from "@/components/trip/RouteSummary";
 import { ShareTripButton } from "@/components/trip/ShareTripButton";
 import { StopList } from "@/components/trip/StopList";
+import { TripInfoRows } from "@/components/trip/TripInfoRows";
 import { type MapMarker } from "@/components/map/MapView";
 import { ChevronLeftIcon, EditIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
@@ -84,9 +85,7 @@ export default async function TripDetailPage({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-              <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-                {trip.start_date} — {trip.end_date} · from {trip.origin_label}
-              </p>
+              <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
               <RouteSummary />
             </div>
             <div className="flex shrink-0 items-center">

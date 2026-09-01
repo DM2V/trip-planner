@@ -22,6 +22,25 @@ export function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)} km`;
 }
 
+// Trip dates are plain "YYYY-MM-DD" strings (from a date input, no time/timezone attached).
+// `new Date("2026-09-05")` parses that as UTC midnight, which `toLocaleDateString` in a
+// timezone behind UTC then renders as the day *before* — parsing the parts directly into a
+// local-time Date sidesteps that off-by-one.
+function parseDateOnly(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+// Formats a trip's date range as "Sep 5 – Sep 6, 2026" — the raw "2026-09-05 — 2026-09-06"
+// strings read as data, not as something a person planning a trip would want to read.
+export function formatDateRange(startDate: string, endDate: string): string {
+  const start = parseDateOnly(startDate);
+  const end = parseDateOnly(endDate);
+  const startLabel = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return `${startLabel} – ${endLabel}`;
+}
+
 // Opens Google Maps' own turn-by-turn directions to a point, by public transit — from wherever
 // the visitor currently is, since that's what's actually useful once you're out visiting places,
 // not the previous stop in the planned order.

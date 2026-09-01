@@ -5,6 +5,7 @@ import Link from "next/link";
 import { deleteTrip } from "@/app/trips/actions";
 import { ConfirmDeleteSheet } from "@/components/trip/ConfirmDeleteSheet";
 import { ChevronRightIcon, TrashIcon } from "@/components/ui/icons";
+import { formatDateRange } from "@/lib/utils";
 import type { Trip } from "@/types";
 
 const UNDO_WINDOW_MS = 4000;
@@ -64,7 +65,7 @@ export function TripCard({ trip }: { trip: Trip }) {
           <div className="min-w-0 flex-1">
             <p className="truncate text-[1.0625rem] font-medium">{trip.name}</p>
             <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-              {trip.start_date} – {trip.end_date}
+              {formatDateRange(trip.start_date, trip.end_date)}
             </p>
           </div>
           <ChevronRightIcon className="h-4 w-4 shrink-0 text-[var(--color-label-tertiary)]" />
