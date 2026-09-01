@@ -96,7 +96,7 @@ export default async function SharedTripPage({
             </p>
             <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
             <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
-            <RouteSummary />
+            <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
           </div>
 
           <ListSection>

@@ -86,7 +86,7 @@ export default async function TripDetailPage({
             <div className="min-w-0">
               <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
               <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
-              <RouteSummary />
+              <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
             </div>
             <div className="flex shrink-0 items-center">
               <Link

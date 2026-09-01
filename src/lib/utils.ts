@@ -26,9 +26,49 @@ export function formatDistance(meters: number): string {
 // `new Date("2026-09-05")` parses that as UTC midnight, which `toLocaleDateString` in a
 // timezone behind UTC then renders as the day *before* — parsing the parts directly into a
 // local-time Date sidesteps that off-by-one.
-function parseDateOnly(dateStr: string): Date {
+export function parseDateOnly(dateStr: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day);
+}
+
+// Inclusive day count — a trip with the same start and end date is 1 day, not 0.
+export function daysBetweenInclusive(startDate: string, endDate: string): number {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const days = Math.round((parseDateOnly(endDate).getTime() - parseDateOnly(startDate).getTime()) / msPerDay) + 1;
+  return Math.max(days, 1);
+}
+
+// Rough sightseeing budget per day, since the trip doesn't record actual daily hours (e.g. a
+// 9am-7pm day) — stated explicitly wherever this feeds into UI copy, not applied silently.
+export const ASSUMED_TOURING_HOURS_PER_DAY = 10;
+
+export interface StopTimeRecommendation {
+  feasible: boolean;
+  days: number;
+  minutesPerStop: number; // meaningful only when feasible
+  shortfallMinutes: number; // meaningful only when not feasible
+}
+
+// How long the user could reasonably spend at each stop, given the trip's date range and the
+// travel time the route already requires — total sightseeing budget (days * assumed hours/day)
+// minus travel time, split evenly across the stops. Doesn't decide which stop happens on which
+// day, just whether the dates hold up at all and a single recommended dwell time.
+export function recommendStopTime(
+  startDate: string,
+  endDate: string,
+  travelDurationSeconds: number,
+  stopCount: number,
+): StopTimeRecommendation {
+  const days = daysBetweenInclusive(startDate, endDate);
+  const availableMinutes = days * ASSUMED_TOURING_HOURS_PER_DAY * 60;
+  const travelMinutes = travelDurationSeconds / 60;
+  const remainingMinutes = availableMinutes - travelMinutes;
+
+  if (remainingMinutes <= 0 || stopCount === 0) {
+    return { feasible: false, days, minutesPerStop: 0, shortfallMinutes: Math.abs(remainingMinutes) };
+  }
+
+  return { feasible: true, days, minutesPerStop: remainingMinutes / stopCount, shortfallMinutes: 0 };
 }
 
 // Formats a trip's date range as "Sep 5 – Sep 6, 2026" — the raw "2026-09-05 — 2026-09-06"

@@ -32,6 +32,8 @@ export default async function EditTripPage({
       <EditTripForm
         tripId={trip.id}
         name={trip.name}
+        startDate={trip.start_date}
+        endDate={trip.end_date}
         originLabel={trip.origin_label}
         originLat={trip.origin_lat}
         originLng={trip.origin_lng}

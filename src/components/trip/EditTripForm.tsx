@@ -10,6 +10,8 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 interface EditTripFormProps {
   tripId: string;
   name: string;
+  startDate: string;
+  endDate: string;
   originLabel: string;
   originLat: number;
   originLng: number;
@@ -19,7 +21,16 @@ interface EditTripFormProps {
 // Same field shapes as the "New Trip" form (trips/new/page.tsx), pre-filled — a search-and-select
 // origin field can't show "the current value" the way a text input can, so the resolved label is
 // echoed back below the search box instead, same as on creation.
-export function EditTripForm({ tripId, name, originLabel, originLat, originLng, error }: EditTripFormProps) {
+export function EditTripForm({
+  tripId,
+  name,
+  startDate,
+  endDate,
+  originLabel,
+  originLat,
+  originLng,
+  error,
+}: EditTripFormProps) {
   const [origin, setOrigin] = useState({ label: originLabel, lat: originLat, lng: originLng });
   const updateTripWithId = updateTrip.bind(null, tripId);
 
@@ -35,6 +46,26 @@ export function EditTripForm({ tripId, name, originLabel, originLat, originLng, 
             defaultValue={name}
             required
             className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+          />
+        </FormRow>
+        <FormRow label="Starts" htmlFor="start_date">
+          <input
+            id="start_date"
+            name="start_date"
+            type="date"
+            defaultValue={startDate}
+            required
+            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
+          />
+        </FormRow>
+        <FormRow label="Ends" htmlFor="end_date">
+          <input
+            id="end_date"
+            name="end_date"
+            type="date"
+            defaultValue={endDate}
+            required
+            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
           />
         </FormRow>
       </ListSection>

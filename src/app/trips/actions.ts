@@ -62,6 +62,11 @@ export async function updateTrip(tripId: string, formData: FormData) {
     .from("trips")
     .update({
       name: formData.get("name") as string,
+      // Dates don't affect travel time between stops, so unlike the origin they don't need to
+      // invalidate any calculated route — the stop-time recommendation (see RouteSummary) is
+      // derived from the dates at render time, not baked into the stored route.
+      start_date: formData.get("start_date") as string,
+      end_date: formData.get("end_date") as string,
       origin_label: formData.get("origin_label") as string,
       origin_lat: originLat,
       origin_lng: originLng,
