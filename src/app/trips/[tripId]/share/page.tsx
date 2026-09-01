@@ -31,22 +31,34 @@ export default async function SharedTripPage({
   if (!searchParams.token) return <InvalidLink />;
 
   const admin = createAdminClient();
+  const supabase = createClient();
 
-  const { data: trip } = await admin
-    .from("trips")
-    .select("*")
-    .eq("id", params.tripId)
-    .eq("share_token", searchParams.token)
-    .single();
+  // The stops fetch only depends on params.tripId (not on the trip row), and the auth check is
+  // unrelated to either — so all three run concurrently instead of one after another. If the
+  // token doesn't match (trip is null), the stops/user results are simply discarded below.
+  const [
+    { data: trip },
+    { data: stops },
+    {
+      data: { user },
+    },
+  ] = await Promise.all([
+    admin
+      .from("trips")
+      .select("*")
+      .eq("id", params.tripId)
+      .eq("share_token", searchParams.token)
+      .single(),
+    admin
+      .from("stops")
+      .select("*")
+      .eq("trip_id", params.tripId)
+      .order("order_index", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+    supabase.auth.getUser(),
+  ]);
 
   if (!trip) return <InvalidLink />;
-
-  const { data: stops } = await admin
-    .from("stops")
-    .select("*")
-    .eq("trip_id", params.tripId)
-    .order("order_index", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
 
   const markers: MapMarker[] = [
     { lat: trip.origin_lat, lng: trip.origin_lng, label: trip.origin_label, variant: "origin" },
@@ -58,11 +70,6 @@ export default async function SharedTripPage({
       order: index + 1,
     })),
   ];
-
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const routes: OptimizedRoutes | null = trip.optimized_route;
 

@@ -18,17 +18,29 @@ export default async function TripDetailPage({
   params: { tripId: string };
 }) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  // The stops query only depends on params.tripId (already known from the URL), not on the trip
+  // row or the resolved user, so it's fired concurrently with the auth check and trip fetch
+  // instead of waiting on them — same three round trips, just no longer serialized. Any of the
+  // redirects below simply discard whichever of these results goes unused.
+  const [
+    {
+      data: { user },
+    },
+    { data: trip },
+    { data: stops },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("trips").select("*").eq("id", params.tripId).single(),
+    supabase
+      .from("stops")
+      .select("*")
+      .eq("trip_id", params.tripId)
+      .order("order_index", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+  ]);
 
   if (!user) redirect("/login");
-
-  const { data: trip } = await supabase
-    .from("trips")
-    .select("*")
-    .eq("id", params.tripId)
-    .single();
 
   if (!trip) redirect("/trips");
 
@@ -37,13 +49,6 @@ export default async function TripDetailPage({
   if (trip.owner_id !== user.id) {
     redirect(`/trips/${trip.id}/share?token=${trip.share_token}`);
   }
-
-  const { data: stops } = await supabase
-    .from("stops")
-    .select("*")
-    .eq("trip_id", params.tripId)
-    .order("order_index", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
 
   const markers: MapMarker[] = [
     { lat: trip.origin_lat, lng: trip.origin_lng, label: trip.origin_label, variant: "origin" },

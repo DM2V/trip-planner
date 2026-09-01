@@ -92,20 +92,21 @@ export async function deleteTrip(tripId: string) {
 // same authorization the "trips: viewers can read" RLS policy would otherwise provide.
 export async function joinSharedTrip(tripId: string, token: string) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Log in first to save this trip");
-
   const admin = createAdminClient();
 
-  const { data: trip } = await admin
-    .from("trips")
-    .select("id")
-    .eq("id", tripId)
-    .eq("share_token", token)
-    .single();
+  // The share-token lookup doesn't depend on the resolved user, so it runs alongside the auth
+  // check instead of after it; if the caller isn't logged in, the lookup result is just discarded.
+  const [
+    {
+      data: { user },
+    },
+    { data: trip },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    admin.from("trips").select("id").eq("id", tripId).eq("share_token", token).single(),
+  ]);
+
+  if (!user) throw new Error("Log in first to save this trip");
 
   if (!trip) throw new Error("Invalid share link");
 
@@ -140,14 +141,19 @@ function describeUnreachablePoint(
 export async function calculateRoute(tripId: string): Promise<{ error?: string }> {
   const supabase = createClient();
 
-  const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single();
-  if (!trip) return { error: "Trip not found" };
+  // The stops query only depends on tripId, not on the trip row, so it runs concurrently with the
+  // trip fetch instead of waiting on it. If the trip turns out not to exist, the stops result is
+  // simply discarded below.
+  const [{ data: trip }, { data: stops }] = await Promise.all([
+    supabase.from("trips").select("*").eq("id", tripId).single(),
+    supabase
+      .from("stops")
+      .select("*")
+      .eq("trip_id", tripId)
+      .order("created_at", { ascending: true }),
+  ]);
 
-  const { data: stops } = await supabase
-    .from("stops")
-    .select("*")
-    .eq("trip_id", tripId)
-    .order("created_at", { ascending: true });
+  if (!trip) return { error: "Trip not found" };
 
   if (!stops || stops.length === 0) {
     return { error: "Add at least one stop before calculating a route" };
