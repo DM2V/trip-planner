@@ -63,6 +63,26 @@ export function LocationIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
+export function CarIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <path d="M5 11l1.5-4A2 2 0 0 1 8.4 5.5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
+      <path d="M3 11h18v4a1 1 0 0 1-1 1h-1M4 16H3a1 1 0 0 1-1-1v-4" />
+      <circle cx="7" cy="16.5" r="1.5" />
+      <circle cx="17" cy="16.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function WalkIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <circle cx="12" cy="5" r="2" />
+      <path d="M12 7v5l-3 6M12 12l3 6M9 9l-4 2M15 9l4 2" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg {...base} strokeWidth={2} className={className}>

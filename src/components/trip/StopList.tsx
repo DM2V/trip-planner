@@ -1,4 +1,5 @@
 import { ListSection } from "@/components/ui/List";
+import { RouteLegConnector } from "./RouteLegConnector";
 import { StopRow } from "./StopRow";
 import type { Stop } from "@/types";
 
@@ -7,7 +8,10 @@ interface StopListProps {
   stops: Stop[];
 }
 
-// Phase 1/3: ordered list of stops with estimated time, shown next to the map.
+// Phase 1/3: ordered list of stops with estimated time, shown next to the map. A RouteLegConnector
+// sits above each stop (once a route exists) showing the trip from the previous stop — or the
+// trip's origin, for the first one — so the distance/time reads as "getting to this stop," not as
+// an attribute of the stop itself.
 export function StopList({ tripId, stops }: StopListProps) {
   if (stops.length === 0) {
     return (
@@ -19,9 +23,10 @@ export function StopList({ tripId, stops }: StopListProps) {
 
   return (
     <ListSection>
-      {stops.map((stop, index) => (
-        <StopRow key={stop.id} tripId={tripId} stop={stop} position={index + 1} />
-      ))}
+      {stops.flatMap((stop, index) => [
+        <RouteLegConnector key={`${stop.id}-leg`} position={index + 1} />,
+        <StopRow key={stop.id} tripId={tripId} stop={stop} position={index + 1} />,
+      ])}
     </ListSection>
   );
 }

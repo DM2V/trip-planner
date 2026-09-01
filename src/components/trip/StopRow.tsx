@@ -6,7 +6,7 @@ import { ConfirmDeleteSheet } from "@/components/trip/ConfirmDeleteSheet";
 import { OpenInMapsSheet } from "@/components/trip/OpenInMapsSheet";
 import { useRouteProfile } from "@/components/trip/RouteProfileContext";
 import { TrashIcon } from "@/components/ui/icons";
-import { formatDistance, formatDuration } from "@/lib/utils";
+import { formatDistance } from "@/lib/utils";
 import type { Stop } from "@/types";
 
 const UNDO_WINDOW_MS = 4000;
@@ -72,7 +72,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
 
   return (
     <>
-      <div className="flex min-h-[60px] items-center bg-[var(--color-bg-elevated)]">
+      <div className="flex min-h-[52px] items-center bg-[var(--color-bg-elevated)]">
         <button
           type="button"
           onClick={() => setMapsSheetOpen(true)}
@@ -82,14 +82,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.8125rem] font-semibold text-white">
             {position}
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[1.0625rem]">{stop.name}</span>
-            {leg && (
-              <span className="block text-[0.8125rem] text-[var(--color-label-secondary)]">
-                {formatDistance(leg.distanceMeters)} · {formatDuration(leg.durationSeconds)}
-              </span>
-            )}
-          </span>
+          <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
         </button>
         <button
           type="button"

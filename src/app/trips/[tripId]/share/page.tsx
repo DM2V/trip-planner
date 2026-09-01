@@ -1,4 +1,5 @@
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
+import { RouteLegConnector } from "@/components/trip/RouteLegConnector";
 import { RouteMap } from "@/components/trip/RouteMap";
 import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
 import { RouteSummary } from "@/components/trip/RouteSummary";
@@ -99,9 +100,10 @@ export default async function SharedTripPage({
           </div>
 
           <ListSection>
-            {(stops ?? []).map((stop, index) => (
-              <SharedStopRow key={stop.id} stop={stop} position={index + 1} />
-            ))}
+            {(stops ?? []).flatMap((stop, index) => [
+              <RouteLegConnector key={`${stop.id}-leg`} position={index + 1} />,
+              <SharedStopRow key={stop.id} stop={stop} position={index + 1} />,
+            ])}
           </ListSection>
 
           {user ? (
