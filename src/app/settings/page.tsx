@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
 import { TabBar } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
 import { ListSection } from "@/components/ui/List";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { createClient } from "@/lib/supabase/server";
@@ -66,6 +67,15 @@ export default async function SettingsPage() {
             </button>
           </form>
         </ListSection>
+
+        <div className="flex flex-col gap-2">
+          <p className="px-1 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
+            Danger Zone
+          </p>
+          <ListSection footer="Permanently deletes your account and all your trips. This can't be undone.">
+            <DeleteAccountButton />
+          </ListSection>
+        </div>
 
         <p className="px-1 text-center text-[0.75rem] text-[var(--color-label-tertiary)]">
           Trip Planner
