@@ -2,6 +2,18 @@ export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+// Formats a route duration as "1h 30m" (Apple/Google Maps style), dropping whichever unit is
+// zero instead of showing "0h" or "0m".
+export function formatDuration(durationSeconds: number): string {
+  const totalMinutes = Math.round(durationSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
+
 // Opens Google Maps' own turn-by-turn directions to a point, by public transit — from wherever
 // the visitor currently is, since that's what's actually useful once you're out visiting places,
 // not the previous stop in the planned order.
