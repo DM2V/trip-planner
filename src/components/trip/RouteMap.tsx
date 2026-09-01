@@ -17,5 +17,8 @@ const MapView = dynamic(() => import("@/components/map/MapView").then((mod) => m
 
 export function RouteMap({ markers, readOnly = false }: { markers: MapMarker[]; readOnly?: boolean }) {
   const { routes, profile } = useRouteProfile();
-  return <MapView markers={markers} routeGeometry={routes?.[profile]?.geometry ?? null} readOnly={readOnly} />;
+  const route = routes?.[profile];
+  return (
+    <MapView markers={markers} routeGeometry={route?.geometry ?? null} legs={route?.legs ?? null} readOnly={readOnly} />
+  );
 }

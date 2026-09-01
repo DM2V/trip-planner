@@ -3,10 +3,13 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { formatDistance, formatDuration } from "@/lib/utils";
+import type { RouteLeg } from "@/lib/ors/optimization";
 
 // Free basemap style, no API key required.
 const CARTO_VOYAGER_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 const ROUTE_SOURCE_ID = "trip-route";
+const LEG_LABELS_SOURCE_ID = "trip-route-legs";
 // Fixed hex values, not CSS vars: the basemap and its overlays render on WebGL canvas, not the
 // DOM, so they can't read the app's light/dark tokens. The basemap itself is always light, so
 // iOS systemBlue (light-mode value) reads correctly here regardless of the app's own theme.
@@ -45,21 +48,51 @@ function createMarkerElement(point: MapMarker): HTMLDivElement {
   return el;
 }
 
+// One label per leg, positioned at the straight-line midpoint between the two stops it connects
+// (not the midpoint along the actual road/path, which isn't worth the extra plumbing — every
+// route here is short enough within a city that the straight-line midpoint sits right by the
+// route line anyway).
+function buildLegLabels(markers: MapMarker[], legs: RouteLeg[] | null): GeoJSON.FeatureCollection {
+  if (!legs) return EMPTY_FEATURE_COLLECTION;
+
+  const count = Math.min(legs.length, markers.length - 1);
+  const features: GeoJSON.Feature<GeoJSON.Point>[] = [];
+  for (let i = 0; i < count; i++) {
+    const from = markers[i];
+    const to = markers[i + 1];
+    const leg = legs[i];
+    features.push({
+      type: "Feature",
+      properties: { label: `${formatDistance(leg.distanceMeters)} · ${formatDuration(leg.durationSeconds)}` },
+      geometry: { type: "Point", coordinates: [(from.lng + to.lng) / 2, (from.lat + to.lat) / 2] },
+    });
+  }
+  return { type: "FeatureCollection", features };
+}
+
 interface MapViewProps {
   markers: MapMarker[];
   routeGeometry?: GeoJSON.Feature<GeoJSON.LineString> | null;
+  legs?: RouteLeg[] | null;
   readOnly?: boolean;
 }
 
 // Phase 2/3: minimalist base map with a pin per origin/stop, auto-fitted to show them all,
 // plus the optimized route line once it's been calculated.
-export function MapView({ markers, routeGeometry = null, readOnly = false }: MapViewProps) {
+export function MapView({ markers, routeGeometry = null, legs = null, readOnly = false }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const loadedRef = useRef(false);
   const routeGeometryRef = useRef(routeGeometry);
   routeGeometryRef.current = routeGeometry;
+  // Latest markers/legs, read once inside the one-time map.on("load") callback below — a plain
+  // closure over the `markers`/`legs` params would only see whatever they were on the render that
+  // first mounted the map, same reasoning as routeGeometryRef.
+  const markersDataRef = useRef(markers);
+  markersDataRef.current = markers;
+  const legsRef = useRef(legs);
+  legsRef.current = legs;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -85,6 +118,27 @@ export function MapView({ markers, routeGeometry = null, readOnly = false }: Map
         source: ROUTE_SOURCE_ID,
         paint: { "line-color": STOP_COLOR, "line-width": 4 },
       });
+
+      map.addSource(LEG_LABELS_SOURCE_ID, {
+        type: "geojson",
+        data: buildLegLabels(markersDataRef.current, legsRef.current),
+      });
+      map.addLayer({
+        id: LEG_LABELS_SOURCE_ID,
+        type: "symbol",
+        source: LEG_LABELS_SOURCE_ID,
+        layout: {
+          "text-field": ["get", "label"],
+          "text-font": ["Open Sans Regular"],
+          "text-size": 11,
+        },
+        paint: {
+          "text-color": "#1c1c1e",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
+
       loadedRef.current = true;
     });
 
@@ -125,6 +179,14 @@ export function MapView({ markers, routeGeometry = null, readOnly = false }: Map
     const source = map.getSource(ROUTE_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
     source?.setData(routeGeometry ?? EMPTY_FEATURE_COLLECTION);
   }, [routeGeometry]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
+
+    const source = map.getSource(LEG_LABELS_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    source?.setData(buildLegLabels(markers, legs));
+  }, [markers, legs]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
