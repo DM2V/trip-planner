@@ -78,7 +78,7 @@ export default async function SettingsPage() {
         </div>
 
         <p className="px-1 text-center text-[0.75rem] text-[var(--color-label-tertiary)]">
-          Trip Planner
+          Manhattan Project
         </p>
       </div>
 

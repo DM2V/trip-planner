@@ -9,7 +9,7 @@ export default function HomePage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-[1.75rem] font-bold tracking-tight">Trip Planner</h1>
+        <h1 className="text-[1.75rem] font-bold tracking-tight">Manhattan Project</h1>
         <p className="max-w-xs text-[1.0625rem] text-[var(--color-label-secondary)]">
           Plan the optimal route to visit your places and share it with friends.
         </p>

@@ -8,7 +8,7 @@ export default function SharedTripLoading() {
       <div className="h-[42vh] w-full animate-pulse bg-[var(--color-fill-secondary)]" />
 
       <header className="nav-material flex h-11 items-center px-4">
-        <span className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">Trip Planner</span>
+        <span className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">Manhattan Project</span>
       </header>
 
       <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">

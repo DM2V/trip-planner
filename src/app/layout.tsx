@@ -4,7 +4,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trip Planner",
+  title: "Manhattan Project",
   description: "Optimal route planning for visiting multiple places on a trip",
   manifest: "/manifest.json",
   icons: {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Trip Planner",
+    title: "Manhattan Project",
   },
   // Chrome deprecated apple-mobile-web-app-capable (still needed for actual iOS Safari) in
   // favor of this standard tag — `appleWebApp` above only emits the old one.
