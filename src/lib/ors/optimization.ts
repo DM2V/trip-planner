@@ -3,10 +3,17 @@ import type { LatLng } from "@/types";
 
 const ORS_API_KEY = process.env.ORS_API_KEY;
 
+// ORS/VROOM has no public-transit profile at all — these are the two that make sense for a
+// walkable/driveable trip itinerary.
+export type TravelProfile = "driving-car" | "foot-walking";
+
 export interface OptimizedRoute {
   order: number[];
   distanceMeters: number;
   durationSeconds: number;
+  // Optional because routes calculated before this field existed are still sitting in the
+  // database without it.
+  profile?: TravelProfile;
   geometry: GeoJSON.Feature<GeoJSON.LineString>;
 }
 
@@ -15,6 +22,7 @@ export interface OptimizedRoute {
 export async function getOptimizedRoute(
   origin: LatLng,
   stops: LatLng[],
+  profile: TravelProfile,
 ): Promise<OptimizedRoute> {
   // api.openrouteservice.org was shut off on 2026-08-24 in favor of api.heigit.org (unified HeiGIT API).
   const response = await fetch("https://api.heigit.org/vroom/v0", {
@@ -31,10 +39,7 @@ export async function getOptimizedRoute(
       vehicles: [
         {
           id: 1,
-          // driving-car, not foot-walking: stops can be tens of km apart, which produced
-          // multi-hour "walking" estimates. ORS/VROOM has no public-transit profile at all, so
-          // this is the closest realistic option without a separate transit routing API.
-          profile: "driving-car",
+          profile,
           start: [origin.lng, origin.lat],
         },
       ],
@@ -59,6 +64,7 @@ export async function getOptimizedRoute(
     order,
     distanceMeters: route.distance,
     durationSeconds: route.duration,
+    profile,
     geometry: {
       type: "Feature",
       properties: {},

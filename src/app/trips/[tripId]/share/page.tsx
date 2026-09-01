@@ -4,7 +4,7 @@ import { MapView, type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, travelModeLabel } from "@/lib/utils";
 
 function InvalidLink() {
   return (
@@ -85,7 +85,8 @@ export default async function SharedTripPage({
           {trip.optimized_route && (
             <p className="tinted-accent mt-2 inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
               {(trip.optimized_route.distanceMeters / 1000).toFixed(1)} km ·{" "}
-              {formatDuration(trip.optimized_route.durationSeconds)} driving
+              {formatDuration(trip.optimized_route.durationSeconds)}{" "}
+              {travelModeLabel(trip.optimized_route.profile)}
             </p>
           )}
         </div>

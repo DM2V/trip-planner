@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getOptimizedRoute } from "@/lib/ors/optimization";
+import { getOptimizedRoute, type TravelProfile } from "@/lib/ors/optimization";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -112,7 +112,11 @@ export async function joinSharedTrip(tripId: string, token: string) {
   revalidatePath("/trips");
 }
 
-export async function calculateRoute(tripId: string) {
+export async function calculateRoute(tripId: string, profile: TravelProfile) {
+  if (profile !== "driving-car" && profile !== "foot-walking") {
+    throw new Error("Invalid travel profile");
+  }
+
   const supabase = createClient();
 
   const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single();
@@ -131,6 +135,7 @@ export async function calculateRoute(tripId: string) {
   const route = await getOptimizedRoute(
     { lat: trip.origin_lat, lng: trip.origin_lng },
     stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
+    profile,
   );
 
   await supabase.from("trips").update({ optimized_route: route }).eq("id", tripId);
