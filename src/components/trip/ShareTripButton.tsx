@@ -13,6 +13,7 @@ export function ShareTripButton({
   shareToken: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState(false);
 
   return (
     <div className="relative">
@@ -20,6 +21,7 @@ export function ShareTripButton({
         type="button"
         aria-label={copied ? "Link copied" : "Share trip"}
         onClick={async () => {
+          setError(false);
           const url = `${window.location.origin}/trips/${tripId}/share?token=${shareToken}`;
 
           // navigator.share opens the OS-native share sheet (AirDrop, Messages, Mail, etc. on
@@ -32,14 +34,22 @@ export function ShareTripButton({
             try {
               await navigator.share({ title: tripName, url });
               return;
-            } catch (error) {
-              if (error instanceof Error && error.name === "AbortError") return;
+            } catch (shareError) {
+              if (shareError instanceof Error && shareError.name === "AbortError") return;
             }
           }
 
-          await navigator.clipboard.writeText(url);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
+          try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          } catch {
+            // Clipboard access can be denied outright (permissions policy, an insecure context,
+            // some in-app browsers) — this was previously an uncaught rejection with no feedback
+            // at all, silently doing nothing from the user's perspective.
+            setError(true);
+            setTimeout(() => setError(false), 2000);
+          }
         }}
         className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
       >
@@ -53,6 +63,12 @@ export function ShareTripButton({
       {copied && (
         <span className="tinted-success pointer-events-none absolute right-0 top-full mt-1 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.8125rem] font-medium">
           Link copied
+        </span>
+      )}
+
+      {error && (
+        <span className="tinted-error pointer-events-none absolute right-0 top-full mt-1 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.8125rem] font-medium">
+          Couldn&rsquo;t copy link
         </span>
       )}
     </div>
