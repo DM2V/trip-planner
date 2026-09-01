@@ -42,10 +42,17 @@ export function CalculateRouteButton({
           setError(null);
           startTransition(async () => {
             try {
-              await calculateRoute(tripId);
+              const result = await calculateRoute(tripId);
+              if (result.error) {
+                setError(result.error);
+                return;
+              }
               router.refresh();
-            } catch (err) {
-              setError(err instanceof Error ? err.message : "Could not calculate the route");
+            } catch {
+              // Server Actions redact thrown error messages in production, so calculateRoute
+              // returns failures as data above — this only catches truly unexpected failures
+              // (e.g. a network drop) that never made it that far.
+              setError("Could not calculate the route. Please try again.");
             }
           });
         }}

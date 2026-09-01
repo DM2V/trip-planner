@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getOptimizedRoute, getRouteForSequence, type OptimizedRoutes } from "@/lib/ors/optimization";
+import {
+  getOptimizedRoute,
+  getRouteForSequence,
+  UnroutableCoordinateError,
+  type OptimizedRoutes,
+} from "@/lib/ors/optimization";
+import type { LatLng } from "@/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -112,11 +118,30 @@ export async function joinSharedTrip(tripId: string, token: string) {
   revalidatePath("/trips");
 }
 
-export async function calculateRoute(tripId: string) {
+// Matches an ORS "unroutable coordinate" back to a human-readable name, within a small tolerance
+// (ORS's error message rounds the coordinate) so the user finds out *which* stop is the problem
+// instead of the whole calculation just failing.
+function describeUnreachablePoint(
+  point: LatLng,
+  origin: LatLng,
+  stops: { name: string; lat: number; lng: number }[],
+): string {
+  const TOLERANCE = 0.001; // ~100m — comfortably wider than ORS's own rounding
+  const isNear = (a: LatLng) => Math.abs(a.lat - point.lat) < TOLERANCE && Math.abs(a.lng - point.lng) < TOLERANCE;
+
+  if (isNear(origin)) return "your starting point";
+  const stop = stops.find(isNear);
+  return stop ? `"${stop.name}"` : "one of your stops";
+}
+
+// Next.js redacts any error thrown from a Server Action in production (see
+// https://github.com/vercel/next.js/issues/71101) — so failures here are returned as data
+// instead, or the caller only ever sees a generic, unhelpful message.
+export async function calculateRoute(tripId: string): Promise<{ error?: string }> {
   const supabase = createClient();
 
   const { data: trip } = await supabase.from("trips").select("*").eq("id", tripId).single();
-  if (!trip) throw new Error("Trip not found");
+  if (!trip) return { error: "Trip not found" };
 
   const { data: stops } = await supabase
     .from("stops")
@@ -125,42 +150,53 @@ export async function calculateRoute(tripId: string) {
     .order("created_at", { ascending: true });
 
   if (!stops || stops.length === 0) {
-    throw new Error("Add at least one stop before calculating a route");
+    return { error: "Add at least one stop before calculating a route" };
   }
 
   const origin = { lat: trip.origin_lat, lng: trip.origin_lng };
 
-  // Driving picks the visiting order (it's the default view); walking then reuses that exact
-  // order via a plain Directions call instead of re-optimizing, so the two profiles never
-  // disagree on which stop comes next — only on how long each leg takes.
-  const driving = await getOptimizedRoute(
-    origin,
-    stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
-    "driving-car",
-  );
+  try {
+    // Driving picks the visiting order (it's the default view); walking then reuses that exact
+    // order via a plain Directions call instead of re-optimizing, so the two profiles never
+    // disagree on which stop comes next — only on how long each leg takes.
+    const driving = await getOptimizedRoute(
+      origin,
+      stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
+      "driving-car",
+    );
 
-  const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
-  const walking = await getRouteForSequence(
-    [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng }))],
-    "foot-walking",
-  );
+    const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
+    const walking = await getRouteForSequence(
+      [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng }))],
+      "foot-walking",
+    );
 
-  const routes: OptimizedRoutes = {
-    "driving-car": {
-      distanceMeters: driving.distanceMeters,
-      durationSeconds: driving.durationSeconds,
-      geometry: driving.geometry,
-    },
-    "foot-walking": walking,
-  };
+    const routes: OptimizedRoutes = {
+      "driving-car": {
+        distanceMeters: driving.distanceMeters,
+        durationSeconds: driving.durationSeconds,
+        geometry: driving.geometry,
+      },
+      "foot-walking": walking,
+    };
 
-  await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
+    await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
 
-  await Promise.all(
-    driving.order.map((stopIndex: number, visitPosition: number) =>
-      supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
-    ),
-  );
+    await Promise.all(
+      driving.order.map((stopIndex: number, visitPosition: number) =>
+        supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
+      ),
+    );
 
-  revalidatePath(`/trips/${tripId}`);
+    revalidatePath(`/trips/${tripId}`);
+    return {};
+  } catch (err) {
+    if (err instanceof UnroutableCoordinateError) {
+      const place = describeUnreachablePoint({ lat: err.lat, lng: err.lng }, origin, stops);
+      return {
+        error: `Can't calculate a route — ${place} isn't reachable by road (it may be on an island, or otherwise disconnected from the road network). Try removing it and recalculating.`,
+      };
+    }
+    return { error: "Could not calculate the route. Please try again in a moment." };
+  }
 }

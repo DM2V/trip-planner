@@ -21,6 +21,34 @@ interface VroomRoute extends RouteMetrics {
   order: number[];
 }
 
+// Thrown when ORS can't snap a coordinate onto the road/path network for the requested profile —
+// e.g. a stop on an island with no bridge, or otherwise disconnected. Carries the coordinate (not
+// which stop it was) since that's all ORS's own error message gives us; the caller matches it
+// back to a stop name.
+export class UnroutableCoordinateError extends Error {
+  constructor(
+    public lat: number,
+    public lng: number,
+  ) {
+    super(`No routable point near ${lat}, ${lng}`);
+    this.name = "UnroutableCoordinateError";
+  }
+}
+
+// ORS's "could not find routable point" error embeds the offending coordinate as "lng lat" —
+// e.g. `Could not find routable point within a radius of 350.0 meters of specified coordinate
+// 1: -74.0445000 40.6892490.` Parsed out of the response body so failures for an unreachable
+// stop (an island, a pedestrian-only area for driving, etc.) can be reported by name instead of
+// failing the whole calculation with an opaque 500.
+async function throwForFailedResponse(response: Response, apiName: string): Promise<never> {
+  const body = await response.text();
+  const match = /coordinate \d+: (-?\d+\.?\d*) (-?\d+\.?\d*)/.exec(body);
+  if (match) {
+    throw new UnroutableCoordinateError(Number(match[2]), Number(match[1]));
+  }
+  throw new Error(`${apiName} error: ${response.status}`);
+}
+
 // Phase 3: calls the OpenRouteService Optimization API (VROOM-based, solves the TSP) with the
 // origin as the vehicle's fixed starting point and each stop as a job to visit. Used for the
 // primary (driving) profile only — it's the one that picks the visiting order.
@@ -53,7 +81,7 @@ export async function getOptimizedRoute(
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouteService Optimization API error: ${response.status}`);
+    await throwForFailedResponse(response, "OpenRouteService Optimization API");
   }
 
   const data = await response.json();
@@ -94,7 +122,7 @@ export async function getRouteForSequence(waypoints: LatLng[], profile: TravelPr
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouteService Directions API error: ${response.status}`);
+    await throwForFailedResponse(response, "OpenRouteService Directions API");
   }
 
   const data = await response.json();
