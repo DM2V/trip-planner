@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { deleteStop } from "@/app/trips/actions";
 import { ConfirmDeleteSheet } from "@/components/trip/ConfirmDeleteSheet";
 import { OpenInMapsSheet } from "@/components/trip/OpenInMapsSheet";
+import { useRouteProfile } from "@/components/trip/RouteProfileContext";
 import { TrashIcon } from "@/components/ui/icons";
+import { formatDistance, formatDuration } from "@/lib/utils";
 import type { Stop } from "@/types";
 
 const UNDO_WINDOW_MS = 4000;
@@ -24,6 +26,11 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
   const [mapsSheetOpen, setMapsSheetOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // The leg from the previous stop (or the trip's origin, for position 1) to this one — absent
+  // until a route has been calculated, or for routes calculated before this field existed.
+  const { routes, profile } = useRouteProfile();
+  const leg = routes?.[profile]?.legs?.[position - 1];
 
   // If the row unmounts (navigated away) before the undo window closes, cancel the pending
   // deletion rather than deleting silently in the background after the user has left.
@@ -65,17 +72,24 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
 
   return (
     <>
-      <div className="flex min-h-[52px] items-center bg-[var(--color-bg-elevated)]">
+      <div className="flex min-h-[60px] items-center bg-[var(--color-bg-elevated)]">
         <button
           type="button"
           onClick={() => setMapsSheetOpen(true)}
-          aria-label={`${stop.name}, open directions in Google Maps`}
+          aria-label={`${stop.name}, open directions in Google Maps${leg ? `, ${formatDistance(leg.distanceMeters)} from the previous stop` : ""}`}
           className="flex min-w-0 flex-1 items-center gap-3 px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
         >
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.8125rem] font-semibold text-white">
             {position}
           </span>
-          <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[1.0625rem]">{stop.name}</span>
+            {leg && (
+              <span className="block text-[0.8125rem] text-[var(--color-label-secondary)]">
+                {formatDistance(leg.distanceMeters)} · {formatDuration(leg.durationSeconds)}
+              </span>
+            )}
+          </span>
         </button>
         <button
           type="button"

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDuration } from "@/lib/utils";
+import { formatDistance, formatDuration } from "@/lib/utils";
 import type { TravelProfile } from "@/lib/ors/optimization";
 import { useRouteProfile } from "./RouteProfileContext";
 
@@ -41,8 +41,16 @@ export function RouteSummary() {
       </div>
       {route && (
         <span className="tinted-accent inline-block rounded-full px-3 py-1 text-[0.8125rem] font-medium">
-          {(route.distanceMeters / 1000).toFixed(1)} km · {formatDuration(route.durationSeconds)}
+          {formatDistance(route.distanceMeters)} · {formatDuration(route.durationSeconds)}
         </span>
+      )}
+
+      {route && (
+        <p className="w-full text-[0.75rem] leading-snug text-[var(--color-label-secondary)]">
+          Stops are ordered to minimize total {profile === "foot-walking" ? "walking" : "driving"} distance between
+          them — calculated from real routes, not a straight line — so you spend less time getting around and more
+          time exploring.
+        </p>
       )}
     </div>
   );

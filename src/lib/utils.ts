@@ -14,6 +14,14 @@ export function formatDuration(durationSeconds: number): string {
   return `${hours}h ${minutes}m`;
 }
 
+// Formats a distance as "350 m" below 1km (a 1-decimal km value would round short legs between
+// nearby stops down to "0.0 km" or "0.3 km", both less useful than the actual meter figure), or
+// "1.4 km" at or above it.
+export function formatDistance(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
 // Opens Google Maps' own turn-by-turn directions to a point, by public transit — from wherever
 // the visitor currently is, since that's what's actually useful once you're out visiting places,
 // not the previous stop in the planned order.

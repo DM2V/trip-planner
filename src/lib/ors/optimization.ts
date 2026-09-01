@@ -7,10 +7,19 @@ const ORS_API_KEY = process.env.ORS_API_KEY;
 // walkable/driveable trip itinerary.
 export type TravelProfile = "driving-car" | "foot-walking";
 
+export interface RouteLeg {
+  distanceMeters: number;
+  durationSeconds: number;
+}
+
 export interface RouteMetrics {
   distanceMeters: number;
   durationSeconds: number;
   geometry: GeoJSON.Feature<GeoJSON.LineString>;
+  // One entry per stop, in visiting order: legs[0] is origin -> first stop, legs[i] is the
+  // previous stop -> stop i. Optional because routes calculated before this field existed are
+  // still sitting in the database without it.
+  legs?: RouteLeg[];
 }
 
 // Keyed by profile so a trip can hold both a driving and a walking route at once, letting the
@@ -87,9 +96,18 @@ export async function getOptimizedRoute(
   const data = await response.json();
   const route = data.routes[0];
 
-  const order = route.steps
-    .filter((step: { type: string }) => step.type === "job")
-    .map((step: { id: number }) => step.id - 1);
+  // VROOM's per-step distance/duration are cumulative from the route's start, not deltas — so
+  // each leg is the difference between one job step and the one before it (the vehicle's "start"
+  // step has distance/duration 0, which is exactly the base case the first job step needs).
+  const jobSteps = route.steps.filter((step: { type: string }) => step.type === "job");
+  const order = jobSteps.map((step: { id: number }) => step.id - 1);
+  const legs: RouteLeg[] = jobSteps.map((step: { distance: number; duration: number }, i: number) => {
+    const previous = i === 0 ? { distance: 0, duration: 0 } : jobSteps[i - 1];
+    return {
+      distanceMeters: step.distance - previous.distance,
+      durationSeconds: step.duration - previous.duration,
+    };
+  });
 
   const decoded = polyline.decode(route.geometry) as [number, number][];
 
@@ -97,6 +115,7 @@ export async function getOptimizedRoute(
     order,
     distanceMeters: route.distance,
     durationSeconds: route.duration,
+    legs,
     geometry: {
       type: "Feature",
       properties: {},
@@ -128,9 +147,17 @@ export async function getRouteForSequence(waypoints: LatLng[], profile: TravelPr
   const data = await response.json();
   const feature = data.features[0];
 
+  // Unlike VROOM's cumulative step distances, ORS Directions' `segments` are already one entry
+  // per leg between consecutive waypoints — no diffing needed.
+  const legs: RouteLeg[] = feature.properties.segments.map((segment: { distance: number; duration: number }) => ({
+    distanceMeters: segment.distance,
+    durationSeconds: segment.duration,
+  }));
+
   return {
     distanceMeters: feature.properties.summary.distance,
     durationSeconds: feature.properties.summary.duration,
+    legs,
     geometry: { type: "Feature", properties: {}, geometry: feature.geometry },
   };
 }

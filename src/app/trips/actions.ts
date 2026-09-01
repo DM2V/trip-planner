@@ -182,6 +182,7 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
         distanceMeters: driving.distanceMeters,
         durationSeconds: driving.durationSeconds,
         geometry: driving.geometry,
+        legs: driving.legs,
       },
       "foot-walking": walking,
     };
