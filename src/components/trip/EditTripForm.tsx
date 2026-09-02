@@ -74,7 +74,10 @@ export function EditTripForm({
         <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
           Starting point
         </p>
-        <PlaceSearchInput placeholder="Hotel, address..." onSelect={setOrigin} />
+        {/* Biased toward the origin being replaced — changing a starting point almost always means
+            picking a different place in the same city, and without this an ambiguous name ("Central
+            Park", "Chinatown") ranks a same-named place in another state first. */}
+        <PlaceSearchInput placeholder="Hotel, address..." onSelect={setOrigin} focus={origin} />
         <p className="px-1 text-[0.8125rem] text-[var(--color-label-secondary)]">Starting from: {origin.label}</p>
       </div>
 

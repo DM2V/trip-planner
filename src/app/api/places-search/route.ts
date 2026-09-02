@@ -27,7 +27,15 @@ export async function GET(request: NextRequest) {
     url.searchParams.set("focus.point.lon", focusLng);
   }
 
-  const response = await fetch(url.toString());
+  let response: Response;
+  try {
+    response = await fetch(url.toString());
+  } catch {
+    // A network-level failure (DNS, timeout, connection reset) would otherwise surface as an
+    // unhandled 500 with no usable message for the client to show.
+    return NextResponse.json({ error: "Couldn't reach the search service" }, { status: 502 });
+  }
+
   if (!response.ok) {
     return NextResponse.json(
       { error: `OpenRouteService Geocoding API error: ${response.status}` },
@@ -36,7 +44,8 @@ export async function GET(request: NextRequest) {
   }
 
   const data = await response.json();
-  const suggestions = data.features.map(
+  // Pelias omits `features` entirely on some error shapes rather than returning an empty array.
+  const suggestions = (data.features ?? []).map(
     (feature: {
       properties: { label: string };
       geometry: { coordinates: [number, number] };
