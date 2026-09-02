@@ -13,3 +13,20 @@ export function isGoogleMapsUrl(value: string): boolean {
     return false;
   }
 }
+
+// Sharing a place from the Google Maps phone app doesn't always put a bare URL on the clipboard —
+// iOS's share sheet commonly yields "<place name>\n<url>", which `new URL()` rejects outright, so
+// the paste would silently fall through to being searched as literal text. Pulls the first Maps
+// URL back out of whatever surrounding text came with it.
+export function extractGoogleMapsUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (isGoogleMapsUrl(trimmed)) return trimmed;
+
+  for (const candidate of trimmed.match(/https:\/\/[^\s]+/g) ?? []) {
+    // Trailing sentence punctuation is far more likely to be prose than part of the link.
+    const cleaned = candidate.replace(/[.,;:!?)\]]+$/, "");
+    if (isGoogleMapsUrl(cleaned)) return cleaned;
+  }
+
+  return null;
+}

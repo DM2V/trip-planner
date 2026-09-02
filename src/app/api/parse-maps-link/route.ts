@@ -17,6 +17,10 @@ const SEARCH_COORDS_PATTERN = /\/maps\/search\/(-?\d+\.\d+),\+?(-?\d+\.\d+)/;
 const VIEWPORT_COORDS_PATTERN = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
 const QUERY_COORDS_PATTERN = /[?&](?:q|query)=(-?\d+\.\d+),\s?(-?\d+\.\d+)/;
 const PLACE_NAME_PATTERN = /\/maps\/place\/([^/@]+)/;
+// Sharing from the Google Maps *phone app* produces a link that carries no coordinates anywhere —
+// not in the URL, not in the page body — only "?q=<name>, <street address>". Nothing above can
+// resolve it, so the address itself gets geocoded as a last resort.
+const QUERY_ADDRESS_PATTERN = /[?&](?:q|query)=([^&]+)/;
 
 function safeDecodeURIComponent(value: string): string {
   try {
@@ -52,6 +56,43 @@ function placeFromPage(rawUrl: string, html: string): { label: string; lat: numb
   const nameMatch = PLACE_NAME_PATTERN.exec(url);
   const label = nameMatch ? nameMatch[1].replace(/\+/g, " ") : `${lat}, ${lng}`;
   return { label, lat, lng };
+}
+
+// Last resort for a link shared from the phone app, which carries only a "?q=<name>, <address>".
+// Unlike geocoding a bare place name — which is ambiguous enough that it used to resolve near
+// whoever was *looking* at the link rather than the place meant — what Google puts here is a full
+// street address (with city, state and ZIP), so it resolves on its own without a focus point.
+// Uses Pelias /search rather than /autocomplete: /autocomplete is built for partial input and
+// returns nothing at all for a complete address like this one.
+async function placeFromAddressLookup(
+  rawUrl: string,
+): Promise<{ label: string; lat: number; lng: number } | null> {
+  const match = QUERY_ADDRESS_PATTERN.exec(rawUrl);
+  if (!match) return null;
+
+  const address = safeDecodeURIComponent(match[1].replace(/\+/g, " ")).trim();
+  if (address.length < 3) return null;
+
+  const url = new URL("https://api.heigit.org/pelias/v1/search");
+  url.searchParams.set("api_key", process.env.ORS_API_KEY ?? "");
+  url.searchParams.set("text", address);
+  url.searchParams.set("size", "1");
+
+  try {
+    const response = await fetch(url.toString(), { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const feature = data.features?.[0];
+    if (!feature) return null;
+
+    const [lng, lat] = feature.geometry.coordinates;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+    return { label: feature.properties.label ?? address, lat, lng };
+  } catch {
+    return null;
+  }
 }
 
 // Follows redirects itself (redirect: "manual") instead of letting fetch do it, re-checking each
@@ -103,8 +144,12 @@ export async function GET(request: NextRequest) {
 
   // Most links (a dropped pin, or the documented lat/lng query formats) resolve from the final
   // URL alone — only a "place" page's exact marker coordinates require reading the body, so that
-  // slower request only happens when it's actually needed.
-  const place = placeFromUrlOnly(response.url) ?? (response.ok ? placeFromPage(response.url, await response.text()) : null);
+  // slower request only happens when it's actually needed. A link shared from the phone app has
+  // coordinates in neither, and falls through to geocoding the address it does carry.
+  const place =
+    placeFromUrlOnly(response.url) ??
+    (response.ok ? placeFromPage(response.url, await response.text()) : null) ??
+    (await placeFromAddressLookup(response.url));
 
   if (!place) {
     return NextResponse.json(

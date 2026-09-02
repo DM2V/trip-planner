@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { SearchIcon } from "@/components/ui/icons";
-import { isGoogleMapsUrl } from "@/lib/googleMapsLink";
+import { extractGoogleMapsUrl } from "@/lib/googleMapsLink";
 import type { LatLng } from "@/types";
 
 interface Place {
@@ -47,12 +47,13 @@ export function PlaceSearchInput({
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     const requestId = ++requestIdRef.current;
 
-    if (isGoogleMapsUrl(value)) {
+    const mapsUrl = extractGoogleMapsUrl(value);
+    if (mapsUrl) {
       timeoutRef.current = setTimeout(async () => {
         setLoading(true);
         setSuggestions([]);
         try {
-          const response = await fetch(`/api/parse-maps-link?url=${encodeURIComponent(value)}`);
+          const response = await fetch(`/api/parse-maps-link?url=${encodeURIComponent(mapsUrl)}`);
           const data = await response.json();
           if (requestIdRef.current !== requestId) return;
           if (!response.ok) {
