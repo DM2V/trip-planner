@@ -96,3 +96,10 @@ export function formatDateRange(startDate: string, endDate: string): string {
 export function googleMapsDirectionsUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=transit`;
 }
+
+// Opens the place itself rather than a route to it — for looking up what's actually there (photos,
+// hours, reviews) without planning a trip to it. Coordinates only, for exactly the same reason as
+// the directions URL above: a bare name sent to Google resolves near whoever is looking at it.
+export function googleMapsPlaceUrl(lat: number, lng: number) {
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+}
