@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolvePostLoginRedirect } from "@/app/trips/actions";
 import { createClient } from "@/lib/supabase/server";
 
 // OAuth (Google, etc.) redirects here with a ?code= param after the provider login screen.
@@ -11,5 +12,5 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(new URL("/trips", request.url));
+  return NextResponse.redirect(new URL(await resolvePostLoginRedirect(), request.url));
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { resolvePostLoginRedirect } from "@/app/trips/actions";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
@@ -15,7 +16,7 @@ export async function login(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/trips");
+  redirect(await resolvePostLoginRedirect());
 }
 
 export async function signup(formData: FormData) {

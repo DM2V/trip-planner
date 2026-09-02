@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -157,6 +158,113 @@ export async function joinSharedTrip(tripId: string, token: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/trips");
+}
+
+// "Save to My Trips" above only ever grants "viewer" access to the *original* trip (the DB's
+// role check constraint only allows 'owner' | 'viewer' — there's no 'editor'), and the trip/edit
+// pages redirect anyone who isn't the owner to the read-only share view regardless of
+// trip_members role. So the only way for someone else to actually edit a shared trip is a real
+// copy — a new trips row (fresh id, fresh share_token) they own, with the stops duplicated under
+// it. Returns the new trip's id, or null if the current user isn't logged in or the token is bad.
+export async function copySharedTrip(tripId: string, token: string): Promise<string | null> {
+  const supabase = createClient();
+  const admin = createAdminClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Admin client: the copying user isn't a member of the original trip, so this mirrors the same
+  // token-gated read the public share page itself relies on.
+  const [{ data: original }, { data: originalStops }] = await Promise.all([
+    admin.from("trips").select("*").eq("id", tripId).eq("share_token", token).single(),
+    admin.from("stops").select("*").eq("trip_id", tripId),
+  ]);
+  if (!original) return null;
+
+  const { data: newTrip, error: tripError } = await supabase
+    .from("trips")
+    .insert({
+      owner_id: user.id,
+      name: original.name,
+      start_date: original.start_date,
+      end_date: original.end_date,
+      origin_label: original.origin_label,
+      origin_lat: original.origin_lat,
+      origin_lng: original.origin_lng,
+      // Still valid to copy as-is: same stops, same order, same origin, so the same
+      // distances/legs/geometry apply until the new owner changes any of that themselves.
+      optimized_route: original.optimized_route,
+    })
+    .select("id")
+    .single();
+  if (tripError || !newTrip) return null;
+
+  if (originalStops && originalStops.length > 0) {
+    await supabase.from("stops").insert(
+      originalStops.map((stop) => ({
+        trip_id: newTrip.id,
+        name: stop.name,
+        lat: stop.lat,
+        lng: stop.lng,
+        order_index: stop.order_index,
+      })),
+    );
+  }
+
+  revalidatePath("/trips");
+  return newTrip.id;
+}
+
+// For a visitor who's already logged in: copy immediately, no detour through signup.
+export async function copySharedTripNow(tripId: string, token: string) {
+  const newTripId = await copySharedTrip(tripId, token);
+  if (!newTripId) {
+    redirect(`/trips/${tripId}/share?token=${token}&error=${encodeURIComponent("Could not copy this trip")}`);
+  }
+  redirect(`/trips/${newTripId}`);
+}
+
+// A visitor with no account yet can't copy the trip until they're actually logged in, and this
+// project requires email confirmation (see signup(), (auth)/actions.ts) — there's no session at
+// all right when they sign up, only later when they come back and log in, possibly after
+// clicking the emailed confirmation link in between. A cookie is what survives that whole detour
+// (query params would need to be threaded through every redirect in the chain, including
+// Supabase's own confirmation-link redirect, which this app doesn't control); resolvePostLoginRedirect
+// below is what actually consumes it, from both the password-login action and the OAuth callback.
+const PENDING_TRIP_COPY_COOKIE = "pending_trip_copy";
+
+export async function requestTripCopyOnSignup(tripId: string, token: string) {
+  cookies().set(PENDING_TRIP_COPY_COOKIE, JSON.stringify({ tripId, token }), {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 60 * 60, // an hour is plenty to sign up, confirm by email, and log back in
+    path: "/",
+  });
+  redirect(
+    `/signup?message=${encodeURIComponent("Create an account to get your own editable copy of this trip.")}`,
+  );
+}
+
+// Called right after a successful login — both the password form (auth)/actions.ts and the OAuth
+// callback route — so a pending copy request gets fulfilled regardless of which one the visitor
+// used to actually log in.
+export async function resolvePostLoginRedirect(): Promise<string> {
+  const store = cookies();
+  const pending = store.get(PENDING_TRIP_COPY_COOKIE)?.value;
+  if (!pending) return "/trips";
+
+  store.delete(PENDING_TRIP_COPY_COOKIE);
+  try {
+    const { tripId, token } = JSON.parse(pending) as { tripId: string; token: string };
+    const newTripId = await copySharedTrip(tripId, token);
+    if (newTripId) return `/trips/${newTripId}`;
+  } catch (err) {
+    console.error("resolvePostLoginRedirect: failed to copy pending shared trip:", err);
+  }
+  return "/trips";
 }
 
 // Matches an ORS "unroutable coordinate" back to a human-readable name, within a small tolerance

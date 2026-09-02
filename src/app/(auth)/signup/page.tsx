@@ -3,17 +3,26 @@ import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { FormRow } from "@/components/ui/FormRow";
 import { ListSection } from "@/components/ui/List";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ChevronLeftIcon } from "@/components/ui/icons";
 import { signup } from "../actions";
 
 export default function SignupPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: { error?: string; message?: string };
 }) {
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
+      <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">
+        <ChevronLeftIcon className="h-5 w-5" />
+        Back
+      </Link>
+
       <h1 className="text-center text-[1.75rem] font-bold tracking-tight">Create account</h1>
 
+      {searchParams.message && (
+        <p className="tinted-accent rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.message}</p>
+      )}
       {searchParams.error && (
         <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.error}</p>
       )}

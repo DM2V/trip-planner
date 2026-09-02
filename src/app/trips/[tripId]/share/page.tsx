@@ -1,3 +1,5 @@
+import { copySharedTripNow, requestTripCopyOnSignup } from "@/app/trips/actions";
+import { Button } from "@/components/ui/Button";
 import { JoinTripButton } from "@/components/trip/JoinTripButton";
 import { ReturnToOriginRow } from "@/components/trip/ReturnToOriginRow";
 import { RouteLegConnector } from "@/components/trip/RouteLegConnector";
@@ -114,17 +116,37 @@ export default async function SharedTripPage({
           </ListSection>
 
           {user ? (
-            <JoinTripButton tripId={trip.id} token={trip.share_token} />
+            <div className="flex flex-col gap-3">
+              <JoinTripButton tripId={trip.id} token={trip.share_token} />
+              <form action={copySharedTripNow.bind(null, trip.id, trip.share_token)}>
+                <button
+                  type="submit"
+                  className="w-full text-center text-[0.9375rem] font-medium text-[var(--color-accent)]"
+                >
+                  Or make your own editable copy
+                </button>
+              </form>
+            </div>
           ) : (
-            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
-              <a
-                href={`/login?message=${encodeURIComponent("Log in to save this trip to your list.")}`}
-                className="font-medium text-[var(--color-accent)]"
-              >
-                Log in
-              </a>{" "}
-              to save this trip to your list.
-            </p>
+            <div className="flex flex-col gap-3">
+              <form action={requestTripCopyOnSignup.bind(null, trip.id, trip.share_token)}>
+                <Button type="submit" className="w-full">
+                  Edit Your Own Copy
+                </Button>
+              </form>
+              <p className="text-center text-[0.8125rem] text-[var(--color-label-secondary)]">
+                Creates your own copy of this trip to edit freely — the original stays unchanged.
+              </p>
+              <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">
+                Already have an account?{" "}
+                <a
+                  href={`/login?message=${encodeURIComponent("Log in to save this trip to your list.")}`}
+                  className="font-medium text-[var(--color-accent)]"
+                >
+                  Log in
+                </a>
+              </p>
+            </div>
           )}
         </div>
       </main>

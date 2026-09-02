@@ -3,6 +3,7 @@ import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { FormRow } from "@/components/ui/FormRow";
 import { ListSection } from "@/components/ui/List";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ChevronLeftIcon } from "@/components/ui/icons";
 import { login } from "../actions";
 
 export default function LoginPage({
@@ -12,6 +13,11 @@ export default function LoginPage({
 }) {
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
+      <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">
+        <ChevronLeftIcon className="h-5 w-5" />
+        Back
+      </Link>
+
       <h1 className="text-center text-[1.75rem] font-bold tracking-tight">Welcome back</h1>
 
       {searchParams.message && (
