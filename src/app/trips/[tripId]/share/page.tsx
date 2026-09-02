@@ -7,6 +7,7 @@ import { RouteMap } from "@/components/trip/RouteMap";
 import { RouteProfileProvider } from "@/components/trip/RouteProfileContext";
 import { RouteSummary } from "@/components/trip/RouteSummary";
 import { SharedStopRow } from "@/components/trip/SharedStopRow";
+import { SharedTripTour } from "@/components/trip/SharedTripTour";
 import { TripInfoRows } from "@/components/trip/TripInfoRows";
 import { type MapMarker } from "@/components/map/MapView";
 import { ListSection } from "@/components/ui/List";
@@ -81,7 +82,7 @@ export default async function SharedTripPage({
   return (
     <RouteProfileProvider routes={routes}>
       <main className="flex min-h-dvh flex-col">
-        <div className="h-[42vh] w-full">
+        <div data-tour="map" className="h-[42vh] w-full">
           <RouteMap markers={markers} readOnly />
         </div>
 
@@ -92,7 +93,7 @@ export default async function SharedTripPage({
         </header>
 
         <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
-          <div>
+          <div data-tour="summary">
             <p className="text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
               Shared trip
             </p>
@@ -101,22 +102,24 @@ export default async function SharedTripPage({
             <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
           </div>
 
-          <ListSection>
-            {(stops ?? []).flatMap((stop, index) => [
-              <RouteLegConnector key={`${stop.id}-leg`} position={index + 1} />,
-              <SharedStopRow key={stop.id} stop={stop} position={index + 1} />,
-            ])}
-            <RouteLegConnector key="return-leg" position={(stops ?? []).length + 1} />
-            <ReturnToOriginRow
-              originLabel={trip.origin_label}
-              originLat={trip.origin_lat}
-              originLng={trip.origin_lng}
-              stops={stops ?? []}
-            />
-          </ListSection>
+          <div data-tour="stops">
+            <ListSection>
+              {(stops ?? []).flatMap((stop, index) => [
+                <RouteLegConnector key={`${stop.id}-leg`} position={index + 1} />,
+                <SharedStopRow key={stop.id} stop={stop} position={index + 1} />,
+              ])}
+              <RouteLegConnector key="return-leg" position={(stops ?? []).length + 1} />
+              <ReturnToOriginRow
+                originLabel={trip.origin_label}
+                originLat={trip.origin_lat}
+                originLng={trip.origin_lng}
+                stops={stops ?? []}
+              />
+            </ListSection>
+          </div>
 
           {user ? (
-            <div className="flex flex-col gap-3">
+            <div data-tour="save" className="flex flex-col gap-3">
               <JoinTripButton tripId={trip.id} token={trip.share_token} />
               <form action={copySharedTripNow.bind(null, trip.id, trip.share_token)}>
                 <button
@@ -128,7 +131,7 @@ export default async function SharedTripPage({
               </form>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div data-tour="save" className="flex flex-col gap-3">
               <form action={requestTripCopyOnSignup.bind(null, trip.id, trip.share_token)}>
                 <Button type="submit" className="w-full">
                   Edit Your Own Copy
@@ -149,6 +152,9 @@ export default async function SharedTripPage({
             </div>
           )}
         </div>
+
+        {/* Not for the owner checking their own share link — they wrote the trip. */}
+        {user?.id !== trip.owner_id && <SharedTripTour hasRoute={Boolean(routes)} />}
       </main>
     </RouteProfileProvider>
   );
