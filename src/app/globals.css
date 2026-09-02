@@ -80,17 +80,30 @@ body {
   border-top: 0.5px solid var(--color-separator);
 }
 
+/* Each .tinted-, .nav-material, .sheet-material, .chrome-pill rule below sets its color-mix()-based
+   background/border/shadow twice: a plain rgba() first, then the color-mix() version. color-mix()
+   shipped everywhere only in 2023 (iOS/desktop Safari 16.2, Chrome 111) — a browser that doesn't
+   parse it treats that whole declaration as invalid and keeps the property's last valid value, so
+   listing the rgba() fallback *first* means it's what's used there, while color-mix()-capable
+   browsers still get the theme-aware version since it's declared later and wins the cascade. This
+   was a real gap: without it, chrome that's supposed to look like tinted glass would render fully
+   transparent (background/border/shadow just silently absent) instead of a plain solid color on
+   whatever older Android/iOS browser doesn't support color-mix() yet — one plausible reason a
+   shared trip could visibly look different on another phone from the one this was built on. */
 .tinted-accent {
+  background: rgba(0, 122, 255, 0.15);
   background: color-mix(in srgb, var(--color-accent) 15%, transparent);
   color: var(--color-accent);
 }
 
 .tinted-success {
+  background: rgba(52, 199, 89, 0.15);
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
   color: var(--color-success);
 }
 
 .tinted-error {
+  background: rgba(255, 59, 48, 0.15);
   background: color-mix(in srgb, var(--color-destructive) 15%, transparent);
   color: var(--color-destructive);
 }
@@ -105,10 +118,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
+  background: var(--color-bg);
   background: color-mix(in srgb, var(--color-bg) 72%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(127, 127, 127, 0.15);
   border-bottom: 1px solid color-mix(in srgb, var(--color-label) 8%, transparent);
+  box-shadow: inset 0 1px 0 rgba(127, 127, 127, 0.1);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-label) 6%, transparent);
 }
 
@@ -128,6 +144,7 @@ body {
    purpose: per Apple's own material hierarchy, glass belongs to floating chrome, not to the
    content it's floating over. */
 .sheet-material {
+  background: var(--color-bg-elevated);
   background: color-mix(in srgb, var(--color-bg-elevated) 82%, transparent);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -145,10 +162,13 @@ body {
    button floating over regular app content instead of the map — e.g. the "+ New Trip" pill next
    to a large title. */
 .chrome-pill {
+  background: var(--color-fill-secondary);
   background: color-mix(in srgb, var(--color-bg-elevated) 55%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(127, 127, 127, 0.18);
   border: 1px solid color-mix(in srgb, var(--color-label) 10%, transparent);
+  box-shadow: 0 1px 8px rgba(127, 127, 127, 0.18);
   box-shadow:
     0 1px 8px color-mix(in srgb, var(--color-label) 10%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
