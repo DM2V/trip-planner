@@ -82,22 +82,27 @@ export default async function TripDetailPage({
         </div>
 
         <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
-              <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
-              <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
+          <div className="flex flex-col gap-1">
+            {/* Only the title itself shares this row with the edit/share buttons — the buttons'
+                own column reserves that width for the row's full height, so anything else placed
+                in the same row (dates, origin, the route summary's text) would be squeezed into a
+                narrower column than the screen actually has room for below the buttons. Everything
+                that isn't the title goes on its own full-width row instead. */}
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="min-w-0 flex-1 text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
+              <div className="flex shrink-0 items-center">
+                <Link
+                  href={`/trips/${trip.id}/edit`}
+                  aria-label="Edit trip"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+                >
+                  <EditIcon className="h-5 w-5" />
+                </Link>
+                <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
+              </div>
             </div>
-            <div className="flex shrink-0 items-center">
-              <Link
-                href={`/trips/${trip.id}/edit`}
-                aria-label="Edit trip"
-                className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
-              >
-                <EditIcon className="h-5 w-5" />
-              </Link>
-              <ShareTripButton tripId={trip.id} tripName={trip.name} shareToken={trip.share_token} />
-            </div>
+            <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
+            <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
           </div>
 
           <AddStopField tripId={trip.id} origin={{ lat: trip.origin_lat, lng: trip.origin_lng }} />
