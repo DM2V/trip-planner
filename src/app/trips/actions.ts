@@ -286,7 +286,7 @@ function describeUnreachablePoint(
 // Next.js redacts any error thrown from a Server Action in production (see
 // https://github.com/vercel/next.js/issues/71101) — so failures here are returned as data
 // instead, or the caller only ever sees a generic, unhelpful message.
-export async function calculateRoute(tripId: string): Promise<{ error?: string }> {
+export async function calculateRoute(tripId: string, roundTrip: boolean): Promise<{ error?: string }> {
   const supabase = createClient();
 
   // The stops query only depends on tripId, not on the trip row, so it runs concurrently with the
@@ -317,12 +317,18 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
       origin,
       stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
       "driving-car",
+      roundTrip,
     );
 
-    // Origin appears at both ends of the sequence — same round-trip reasoning as driving's
-    // start/end above — so ORS Directions' segments come back with one extra leg (the return
-    // trip) for free, no separate call needed.
+    // Only append the origin as a closing waypoint for a round trip — same choice driving's
+    // start/end above just made — so ORS Directions' segments come back with one extra leg (the
+    // return trip) for free when it applies, no separate call needed either way.
     const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
+    const walkingWaypoints = [
+      origin,
+      ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
+      ...(roundTrip ? [origin] : []),
+    ];
 
     // Walking failing shouldn't block saving the driving route that already succeeded — e.g. an
     // origin far enough out (an airport, say) can have a perfectly good driving route with no
@@ -331,10 +337,7 @@ export async function calculateRoute(tripId: string): Promise<{ error?: string }
     // Walking is just omitted from the saved route in that case, not treated as a failure.
     let walking = null;
     try {
-      walking = await getRouteForSequence(
-        [origin, ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })), origin],
-        "foot-walking",
-      );
+      walking = await getRouteForSequence(walkingWaypoints, "foot-walking");
     } catch (walkingError) {
       console.error("calculateRoute: walking leg failed, saving driving-only route:", walkingError);
     }

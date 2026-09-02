@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { calculateRoute } from "@/app/trips/actions";
 import { Button } from "@/components/ui/Button";
+import { RouteTypeSheet } from "@/components/trip/RouteTypeSheet";
 
 // Full-screen, not just the button's own "Calculating..." label: calculating now makes two
 // sequential API calls (driving optimization, then walking directions for that same order), so
@@ -28,8 +29,28 @@ export function CalculateRouteButton({
   disabled?: boolean;
 }) {
   const router = useRouter();
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  function runCalculation(roundTrip: boolean) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await calculateRoute(tripId, roundTrip);
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        router.refresh();
+      } catch {
+        // Server Actions redact thrown error messages in production, so calculateRoute returns
+        // failures as data above — this only catches truly unexpected failures (e.g. a network
+        // drop) that never made it that far.
+        setError("Could not calculate the route. Please try again.");
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -38,28 +59,13 @@ export function CalculateRouteButton({
         type="button"
         className="w-full"
         disabled={disabled || isPending}
-        onClick={() => {
-          setError(null);
-          startTransition(async () => {
-            try {
-              const result = await calculateRoute(tripId);
-              if (result.error) {
-                setError(result.error);
-                return;
-              }
-              router.refresh();
-            } catch {
-              // Server Actions redact thrown error messages in production, so calculateRoute
-              // returns failures as data above — this only catches truly unexpected failures
-              // (e.g. a network drop) that never made it that far.
-              setError("Could not calculate the route. Please try again.");
-            }
-          });
-        }}
+        onClick={() => setSheetOpen(true)}
       >
         {isPending ? "Calculating..." : "Calculate Optimal Route"}
       </Button>
       {error && <p className="text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+
+      {sheetOpen && <RouteTypeSheet onSelect={runCalculation} onClose={() => setSheetOpen(false)} />}
     </div>
   );
 }
