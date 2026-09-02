@@ -13,6 +13,14 @@ import type { LatLng } from "@/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
+// Nothing upstream stops a trip being saved with an end date before its start — the date inputs
+// have no `min`/cross-field JS validation — and RouteSummary's day-count math would otherwise just
+// clamp that to "1 day" and confidently report a stop-time recommendation for a nonsensical range.
+function validateTripDates(startDate: string, endDate: string): string | null {
+  if (endDate < startDate) return "End date can't be before the start date";
+  return null;
+}
+
 export async function createTrip(formData: FormData) {
   const supabase = createClient();
   const {
@@ -21,13 +29,18 @@ export async function createTrip(formData: FormData) {
 
   if (!user) redirect("/login");
 
+  const startDate = formData.get("start_date") as string;
+  const endDate = formData.get("end_date") as string;
+  const dateError = validateTripDates(startDate, endDate);
+  if (dateError) redirect(`/trips/new?error=${encodeURIComponent(dateError)}`);
+
   const { data: trip, error } = await supabase
     .from("trips")
     .insert({
       owner_id: user.id,
       name: formData.get("name") as string,
-      start_date: formData.get("start_date") as string,
-      end_date: formData.get("end_date") as string,
+      start_date: startDate,
+      end_date: endDate,
       origin_label: formData.get("origin_label") as string,
       origin_lat: Number(formData.get("origin_lat")),
       origin_lng: Number(formData.get("origin_lng")),
@@ -53,6 +66,11 @@ export async function updateTrip(tripId: string, formData: FormData) {
     .single();
   if (!trip) redirect("/trips");
 
+  const startDate = formData.get("start_date") as string;
+  const endDate = formData.get("end_date") as string;
+  const dateError = validateTripDates(startDate, endDate);
+  if (dateError) redirect(`/trips/${tripId}/edit?error=${encodeURIComponent(dateError)}`);
+
   const originLat = Number(formData.get("origin_lat"));
   const originLng = Number(formData.get("origin_lng"));
   // A changed origin invalidates any calculated route (every leg and the geometry itself were
@@ -66,8 +84,8 @@ export async function updateTrip(tripId: string, formData: FormData) {
       // Dates don't affect travel time between stops, so unlike the origin they don't need to
       // invalidate any calculated route — the stop-time recommendation (see RouteSummary) is
       // derived from the dates at render time, not baked into the stored route.
-      start_date: formData.get("start_date") as string,
-      end_date: formData.get("end_date") as string,
+      start_date: startDate,
+      end_date: endDate,
       origin_label: formData.get("origin_label") as string,
       origin_lat: originLat,
       origin_lng: originLng,

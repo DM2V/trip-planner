@@ -29,9 +29,16 @@ export function DeleteAccountButton() {
           onConfirm={() => {
             setError(null);
             startTransition(async () => {
-              const result = await deleteAccount();
-              // On success, deleteAccount() redirects server-side — this only ever runs on failure.
-              if (result?.error) setError(result.error);
+              try {
+                const result = await deleteAccount();
+                // On success, deleteAccount() redirects server-side — this only runs on failure.
+                if (result?.error) setError(result.error);
+              } catch {
+                // deleteAccount() only converts the expected admin-delete failure into { error };
+                // anything else (e.g. a genuinely unexpected throw) lands here instead of as an
+                // unhandled rejection with no feedback at all.
+                setError("Could not delete your account. Please try again.");
+              }
             });
           }}
           onClose={() => setConfirmOpen(false)}

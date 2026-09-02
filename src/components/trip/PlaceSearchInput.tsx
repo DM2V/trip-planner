@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { SearchIcon } from "@/components/ui/icons";
+import { isGoogleMapsUrl } from "@/lib/googleMapsLink";
 import type { LatLng } from "@/types";
 
 interface Place {
@@ -19,18 +20,6 @@ interface PlaceSearchInputProps {
   focus?: LatLng;
 }
 
-// Hosts Google actually issues Maps links/redirects from — mirrors the allowlist in
-// /api/parse-maps-link, just used here to route input to that endpoint instead of the text search.
-const GOOGLE_MAPS_HOSTS = ["google.com", "www.google.com", "maps.google.com", "maps.app.goo.gl", "goo.gl", "g.co"];
-
-function isGoogleMapsLink(value: string): boolean {
-  try {
-    return GOOGLE_MAPS_HOSTS.includes(new URL(value).hostname);
-  } catch {
-    return false;
-  }
-}
-
 // Phase 1/2: debounced search box backed by /api/places-search (OpenRouteService Geocoding).
 // Also accepts a pasted Google Maps link directly (via /api/parse-maps-link), for the places our
 // OpenStreetMap-based search doesn't have at all.
@@ -45,24 +34,38 @@ export function PlaceSearchInput({
   const [submittingIndex, setSubmittingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  // Debouncing only cancels a *pending* timeout, not a fetch that's already in flight — pasting a
+  // link and then quickly typing a normal query starts the (slower) link lookup, then the (faster)
+  // text search, and without this the link lookup could still resolve *after* the search and
+  // clobber its results with a stale single-place suggestion. Each debounced run captures the
+  // current id and checks it's still current before touching state.
+  const requestIdRef = useRef(0);
 
   function handleChange(value: string) {
     setQuery(value);
     setError(null);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const requestId = ++requestIdRef.current;
 
-    if (isGoogleMapsLink(value)) {
+    if (isGoogleMapsUrl(value)) {
       timeoutRef.current = setTimeout(async () => {
         setLoading(true);
         setSuggestions([]);
-        const response = await fetch(`/api/parse-maps-link?url=${encodeURIComponent(value)}`);
-        const data = await response.json();
-        setLoading(false);
-        if (!response.ok) {
-          setError(data.error ?? "Couldn't read that Google Maps link");
-          return;
+        try {
+          const response = await fetch(`/api/parse-maps-link?url=${encodeURIComponent(value)}`);
+          const data = await response.json();
+          if (requestIdRef.current !== requestId) return;
+          if (!response.ok) {
+            setError(data.error ?? "Couldn't read that Google Maps link");
+            return;
+          }
+          setSuggestions([data.place]);
+        } catch {
+          if (requestIdRef.current !== requestId) return;
+          setError("Couldn't reach that link");
+        } finally {
+          if (requestIdRef.current === requestId) setLoading(false);
         }
-        setSuggestions([data.place]);
       }, 300);
       return;
     }
@@ -74,15 +77,22 @@ export function PlaceSearchInput({
 
     timeoutRef.current = setTimeout(async () => {
       setLoading(true);
-      const params = new URLSearchParams({ q: value });
-      if (focus) {
-        params.set("focusLat", String(focus.lat));
-        params.set("focusLng", String(focus.lng));
+      try {
+        const params = new URLSearchParams({ q: value });
+        if (focus) {
+          params.set("focusLat", String(focus.lat));
+          params.set("focusLng", String(focus.lng));
+        }
+        const response = await fetch(`/api/places-search?${params.toString()}`);
+        const data = await response.json();
+        if (requestIdRef.current !== requestId) return;
+        setSuggestions(data.suggestions ?? []);
+      } catch {
+        if (requestIdRef.current !== requestId) return;
+        setError("Couldn't search right now");
+      } finally {
+        if (requestIdRef.current === requestId) setLoading(false);
       }
-      const response = await fetch(`/api/places-search?${params.toString()}`);
-      const data = await response.json();
-      setSuggestions(data.suggestions ?? []);
-      setLoading(false);
     }, 300);
   }
 

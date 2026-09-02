@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { OptimizedRoutes, TravelProfile } from "@/lib/ors/optimization";
 
 interface RouteProfileContextValue {
@@ -23,18 +23,24 @@ export function RouteProfileProvider({
   children: ReactNode;
 }) {
   const [profile, setProfile] = useState<TravelProfile>("driving-car");
+
   // Walking can fail to calculate at all (e.g. an origin far enough out — an airport, say — that
   // no walking route exists) while driving still succeeds — see calculateRoute. If the selected
-  // profile has no data, every consumer (map, summary, stop rows) should fall back to whichever
-  // profile actually does, rather than each re-deriving that fallback — and rather than resetting
-  // the underlying selection, so it picks back up if that profile becomes available again later.
-  const effectiveProfile = routes?.[profile] ? profile : routes?.["driving-car"] ? "driving-car" : profile;
+  // profile has no data, every consumer (map, summary, stop rows) should fall back to driving
+  // rather than each re-deriving that fallback — and the underlying selection is left alone
+  // rather than reset, so it picks back up if that profile becomes available again later.
+  const effectiveProfile: TravelProfile =
+    routes?.[profile] || !routes?.["driving-car"] ? profile : "driving-car";
 
-  return (
-    <RouteProfileContext.Provider value={{ profile: effectiveProfile, setProfile, routes }}>
-      {children}
-    </RouteProfileContext.Provider>
+  // Every consumer (map, summary, stop rows, connectors) reads this context, so a value object
+  // rebuilt on every render would re-render all of them on any unrelated parent re-render, not
+  // just an actual profile/routes change.
+  const value = useMemo(
+    () => ({ profile: effectiveProfile, setProfile, routes }),
+    [effectiveProfile, setProfile, routes],
   );
+
+  return <RouteProfileContext.Provider value={value}>{children}</RouteProfileContext.Provider>;
 }
 
 export function useRouteProfile() {

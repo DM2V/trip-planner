@@ -26,6 +26,7 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
   const availableOptions = OPTIONS.filter((option) => routes?.[option.profile]);
   if (availableOptions.length === 0) return null;
 
+  const walkingUnavailable = Boolean(routes?.["driving-car"]) && !routes?.["foot-walking"];
   const route = routes?.[profile] ?? null;
   const travelDurationSeconds = route?.durationSeconds ?? 0;
   const recommendation = route ? recommendStopTime(startDate, endDate, travelDurationSeconds, stopCount) : null;
@@ -68,7 +69,7 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
           Stops are ordered to minimize total {profile === "foot-walking" ? "walking" : "driving"} distance between
           them — calculated from real routes, not a straight line — so you spend less time getting around and more
           time exploring.
-          {availableOptions.length === 1 && availableOptions[0].profile === "driving-car" && (
+          {walkingUnavailable && (
             <> No walking route could be found for this trip (the starting point may be too far to walk from).</>
           )}
         </p>
