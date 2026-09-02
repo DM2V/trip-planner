@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { IOSActiveStateFix } from "@/components/IOSActiveStateFix";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
@@ -56,6 +58,12 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegister />
         <IOSActiveStateFix />
+        {/* Page views and Core Web Vitals from real visitors. Both are cookieless and only send
+            data from Vercel deployments, so local development stays silent. They still need Web
+            Analytics and Speed Insights switched on for the project in the Vercel dashboard —
+            the components alone don't enable collection. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
