@@ -83,7 +83,7 @@ export default async function TripDetailPage({
 
         <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
           <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
               <TripInfoRows startDate={trip.start_date} endDate={trip.end_date} originLabel={trip.origin_label} />
               <RouteSummary startDate={trip.start_date} endDate={trip.end_date} stopCount={(stops ?? []).length} />
