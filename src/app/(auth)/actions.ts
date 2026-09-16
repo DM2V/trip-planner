@@ -31,7 +31,14 @@ export async function signup(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/login?message=Check your email to confirm your account, then log in.");
+  // The confirmation link signs them in on arrival (see app/auth/callback) — telling them to come
+  // back and log in sent people to a login form they didn't need, right at the point where most
+  // first-time visitors were already dropping off.
+  redirect(
+    `/login?message=${encodeURIComponent(
+      "Almost there — open the confirmation link we just emailed you and you'll be signed straight in.",
+    )}`,
+  );
 }
 
 export async function logout() {

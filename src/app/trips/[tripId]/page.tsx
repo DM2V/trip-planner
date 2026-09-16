@@ -116,6 +116,18 @@ export default async function TripDetailPage({
           />
 
           <CalculateRouteButton tripId={trip.id} disabled={!stops || stops.length === 0} />
+
+          {/* Sharing is the only way this app reaches anyone new, and the icon in the title row is
+              easy to miss. Once a route exists the trip is actually worth sending, so that's where
+              the invitation belongs. */}
+          {routes && (
+            <ShareTripButton
+              tripId={trip.id}
+              tripName={trip.name}
+              shareToken={trip.share_token}
+              variant="full"
+            />
+          )}
         </div>
       </main>
     </RouteProfileProvider>
