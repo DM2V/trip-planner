@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // Supabase can deliver a session two ways. The PKCE flow puts a ?code= in the query, which the
-// server can read and exchange — that's the normal path and it never reaches this component. The
-// implicit flow instead puts the tokens in the URL *fragment*, which browsers never send to the
-// server, so no amount of server-side code can see them. That happens when the code verifier
-// cookie isn't available to match the code — most commonly when someone signs up on one device
-// and opens the confirmation email on another.
+// server exchanges in /auth/callback — that's the normal path and it never reaches this component.
+// The implicit flow instead puts the tokens in the URL *fragment*, which browsers never send to
+// the server, so no amount of server-side code can see them. That's what arrives when no code
+// verifier cookie is available to match a code — most commonly when someone signs up on one
+// device and opens the confirmation email on another.
 //
-// Reading the fragment here and handing it to setSession writes the same auth cookies the server
-// exchange would have, so reloading without the fragment lands on an ordinary logged-in request.
+// Handing those tokens to setSession from the browser writes the same auth cookies the server
+// exchange would have, after which /auth/callback can finish the sign-in normally.
 export function CompleteSessionFromHash() {
   const [failed, setFailed] = useState(false);
 
@@ -32,10 +32,11 @@ export function CompleteSessionFromHash() {
           setFailed(true);
           return;
         }
-        // Same URL minus the fragment: the server request that follows now carries the session
-        // cookies, so the page above redirects onward the same way it would after a ?code=
-        // exchange — including honouring a pending shared-trip copy.
-        window.location.replace(window.location.pathname);
+        // Back to the callback, now that the session cookies exist: it sees the session and
+        // redirects onward exactly as it would after a ?code= exchange, including honouring a
+        // pending shared-trip copy. Going anywhere else would skip that, and reloading this page
+        // would just find no fragment the second time.
+        window.location.replace("/auth/callback");
       })
       .catch(() => setFailed(true));
   }, []);
