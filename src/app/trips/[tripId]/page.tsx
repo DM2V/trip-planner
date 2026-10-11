@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AddStopField } from "@/components/trip/AddStopField";
 import { CalculateRouteButton } from "@/components/trip/CalculateRouteButton";
 import { RouteMap } from "@/components/trip/RouteMap";
@@ -11,6 +10,7 @@ import { TripInfoRows } from "@/components/trip/TripInfoRows";
 import { type MapMarker } from "@/components/map/MapView";
 import { ChevronLeftIcon, EditIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
+import { requireTripOwner } from "@/lib/tripAccess";
 import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
 export default async function TripDetailPage({
@@ -28,7 +28,7 @@ export default async function TripDetailPage({
     {
       data: { user },
     },
-    { data: trip },
+    { data: tripRow },
     { data: stops },
   ] = await Promise.all([
     supabase.auth.getUser(),
@@ -41,15 +41,8 @@ export default async function TripDetailPage({
       .order("created_at", { ascending: true }),
   ]);
 
-  if (!user) redirect("/login");
-
-  if (!trip) redirect("/trips");
-
-  // This page has owner-only actions (add/remove stops, recalculate route). A viewer who saved
-  // this trip should land on the read-only share view instead.
-  if (trip.owner_id !== user.id) {
-    redirect(`/trips/${trip.id}/share?token=${trip.share_token}`);
-  }
+  // Owner-only: this page has actions a viewer can't take (add/remove stops, recalculate).
+  const trip = requireTripOwner(user, tripRow);
 
   const markers: MapMarker[] = [
     { lat: trip.origin_lat, lng: trip.origin_lng, label: trip.origin_label, variant: "origin" },
