@@ -146,6 +146,58 @@ export async function deleteTrip(tripId: string) {
   revalidatePath("/trips");
 }
 
+// Cuts off everyone who currently has access through sharing. A share link is a bearer secret —
+// anyone who has it can open the trip — so without this there was no way to take back a link that
+// had been forwarded further than intended.
+//
+// Two separate doors need closing, and rotating the token alone only closes one: the link itself
+// (share_token) and the people who pressed "Save to My Trips" (trip_members rows), who read the
+// trip through RLS and would keep seeing it, and be handed the new token on their next visit.
+//
+// Ownership is enforced by RLS on both writes ("owner has full control" / "owner manages
+// guests"), and the explicit owner_id filter on the update makes a non-owner's call a clean no-op
+// rather than relying on that alone. Returns data, not a throw, per the Server Action error
+// redaction note above calculateRoute.
+export async function resetShareLink(tripId: string): Promise<{ error?: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Log in again to do this" };
+
+  const { data: updated, error } = await supabase
+    .from("trips")
+    .update({ share_token: crypto.randomUUID() })
+    .eq("id", tripId)
+    .eq("owner_id", user.id)
+    .select("id");
+
+  if (error || !updated || updated.length === 0) {
+    console.error("resetShareLink: token rotation failed", error);
+    return { error: "Could not reset the share link. Please try again." };
+  }
+
+  // After the token is rotated: even if this second step failed, the old link is already dead,
+  // which is the part that matters most. Say so rather than reporting a total failure.
+  const { error: membersError } = await supabase
+    .from("trip_members")
+    .delete()
+    .eq("trip_id", tripId)
+    .eq("role", "viewer");
+
+  if (membersError) {
+    console.error("resetShareLink: removing saved viewers failed", membersError);
+    revalidatePath(`/trips/${tripId}`);
+    return {
+      error:
+        "The old link no longer works, but we couldn't remove people who had already saved this trip. Try again.",
+    };
+  }
+
+  revalidatePath(`/trips/${tripId}`);
+  return {};
+}
+
 // Called from the public /trips/[tripId]/share page, so the visitor isn't necessarily a trip
 // member yet — we verify the share_token ourselves (via the admin client) before writing,
 // same authorization the "trips: viewers can read" RLS policy would otherwise provide.

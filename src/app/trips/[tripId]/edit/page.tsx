@@ -1,4 +1,5 @@
 import { EditTripForm } from "@/components/trip/EditTripForm";
+import { ResetShareLinkButton } from "@/components/trip/ResetShareLinkButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 import { requireTripOwner } from "@/lib/tripAccess";
@@ -37,6 +38,7 @@ export default async function EditTripPage({
         originLng={trip.origin_lng}
         error={searchParams.error}
       />
+      <ResetShareLinkButton tripId={trip.id} />
     </main>
   );
 }
