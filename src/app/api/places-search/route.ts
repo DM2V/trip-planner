@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rejectIfSignedOut } from "@/lib/apiAuth";
 
 const ORS_API_KEY = process.env.ORS_API_KEY;
 
 // Phase 2: proxies to the OpenRouteService Geocoding (autocomplete) endpoint — same API key as
 // the optimization route, one less account to manage.
 export async function GET(request: NextRequest) {
+  const signedOut = await rejectIfSignedOut();
+  if (signedOut) return signedOut;
+
   const query = request.nextUrl.searchParams.get("q");
 
   if (!query) {

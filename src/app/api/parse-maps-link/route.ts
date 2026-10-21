@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rejectIfSignedOut } from "@/lib/apiAuth";
 import { isGoogleMapsUrl } from "@/lib/googleMapsLink";
 
 const MAX_REDIRECTS = 5;
@@ -129,6 +130,9 @@ async function fetchFollowingAllowedRedirects(startUrl: string): Promise<Respons
 // Lets a stop be added from a pasted Google Maps link instead of our own (OpenStreetMap-based)
 // search, for the places that search can't find at all.
 export async function GET(request: NextRequest) {
+  const signedOut = await rejectIfSignedOut();
+  if (signedOut) return signedOut;
+
   const link = request.nextUrl.searchParams.get("url");
 
   if (!link || !isGoogleMapsUrl(link)) {

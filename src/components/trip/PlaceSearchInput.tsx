@@ -87,6 +87,13 @@ export function PlaceSearchInput({
         const response = await fetch(`/api/places-search?${params.toString()}`);
         const data = await response.json();
         if (requestIdRef.current !== requestId) return;
+        if (!response.ok) {
+          // An expired session now answers 401 here — say so instead of showing an empty list
+          // that looks like "no results".
+          setSuggestions([]);
+          setError(data.error ?? "Couldn't search right now");
+          return;
+        }
         setSuggestions(data.suggestions ?? []);
       } catch {
         if (requestIdRef.current !== requestId) return;
