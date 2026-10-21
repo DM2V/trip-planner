@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// Must run before the first Map is created. The worker is copied into public/ at build time —
+// see scripts/copy-maplibre-worker.mjs for why the default bundler-resolved worker doesn't work.
+maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 import { formatDistance, formatDuration } from "@/lib/utils";
 import type { RouteLeg } from "@/lib/ors/optimization";
 
