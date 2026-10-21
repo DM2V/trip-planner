@@ -1,4 +1,4 @@
-# Manhattan Project
+# Trip Planner
 
 Plan the best order to visit a list of places, see the real driving and walking time between each
 stop, and share the trip with a link. A mobile-first PWA built to feel like a native iOS app.

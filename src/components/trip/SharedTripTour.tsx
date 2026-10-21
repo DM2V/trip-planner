@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Shown once per browser. A visitor who dismissed it shouldn't meet it again on every trip
 // someone sends them, so the flag is deliberately not scoped to the trip id.
-const STORAGE_KEY = "manhattan-project:shared-tour-seen";
+const STORAGE_KEY = "trip-planner:shared-tour-seen";
 // Breathing room between the highlighted element and the edge of the cut-out.
 const SPOTLIGHT_PADDING = 8;
 // Below this much room under the element, the card goes above it instead.

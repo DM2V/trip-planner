@@ -88,7 +88,7 @@ export default async function SharedTripPage({
 
         <header className="nav-material flex h-11 items-center px-4">
           <a href={user ? "/trips" : "/"} className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">
-            Manhattan Project
+            Trip Planner
           </a>
         </header>
 

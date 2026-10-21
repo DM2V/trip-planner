@@ -1,6 +1,6 @@
 {
-  "name": "Manhattan Project",
-  "short_name": "Manhattan",
+  "name": "Trip Planner",
+  "short_name": "Trip Planner",
   "description": "Optimal route planning for visiting multiple places on a trip",
   "start_url": "/trips",
   "display": "standalone",
