@@ -1,64 +1,103 @@
-# Trip Planner
+# Manhattan Project
 
-Mobile-first web app (PWA) that calculates the optimal route between multiple places on a trip,
-saves it, and shares it (read-only) with friends.
+Plan the best order to visit a list of places, see the real driving and walking time between each
+stop, and share the trip with a link. A mobile-first PWA built to feel like a native iOS app.
+
+- **Optimal ordering** — stops are sequenced to minimise total travel time using real road
+  networks (not straight lines), as a round trip back to the start or a one-way route.
+- **Driving and walking** — both are calculated together and toggled in the UI, with per-leg
+  distance and time on the map and in the list.
+- **Time per stop** — given the trip's dates and the travel time, estimates how long you can spend
+  at each stop.
+- **Add stops by search or by pasted Google Maps link** — including links shared from the Google
+  Maps phone app.
+- **Share by link** — anyone can open a shared trip without an account, see the map and route, and
+  open any stop in Google Maps. They can make their own editable copy; the original is untouched.
+  The owner can reset the link at any time.
 
 ## Stack
 
-- Next.js + TypeScript + Tailwind CSS
-- Motion (spring-based gestures — swipe-to-delete)
-- MapLibre GL JS + CARTO basemaps (no API key required, free minimalist tiles)
-- OpenRouteService Optimization API (solves the optimal stop order) + Geocoding API (place search) —
-  one free API key, email signup only, no credit card
-- Supabase (Postgres + Auth + Row Level Security)
+Next.js 14 (App Router, Server Actions) · TypeScript · Tailwind CSS · Supabase (Auth, Postgres, Row
+Level Security) · MapLibre GL with the free CARTO Voyager basemap · HeiGIT / OpenRouteService
+(VROOM optimisation, Directions, Pelias geocoding) · Vercel.
 
-## Local setup
+## Running it yourself
 
-1. Install Node.js LTS (18+): https://nodejs.org
-2. `npm install`
-3. `cp .env.example .env.local` and fill in the keys:
-   - Supabase: Project Settings → API Keys (`anon key`, `service_role key`) and
-     Integrations → Data API (`Project URL`)
-   - OpenRouteService: sign up at openrouteservice.org/dev/#/signup (email only) → Dashboard → API key
-4. Apply the schema: paste the contents of each file in `supabase/migrations/` (in order,
-   `0001_init.sql` through the highest-numbered one) into the SQL Editor of your Supabase project
-   (or use `supabase db push` if you have the CLI installed). Skipping the later migrations leaves
-   signup, viewing shared trips, and the share feature itself broken.
-5. `npm run dev` → http://localhost:3000
+You need Node.js 18.17 or newer, a Supabase project, and an OpenRouteService API key (free, email
+signup only, no card).
 
-## Key security
+1. **Install**
 
-- `NEXT_PUBLIC_*` variables ship to the browser — they're safe to expose because actual data
-  access is controlled by Row Level Security in Postgres, not by the secrecy of the key.
-- `SUPABASE_SERVICE_ROLE_KEY` must **never** get the `NEXT_PUBLIC_` prefix or be used outside of
-  one-off server-side admin tasks — it bypasses RLS entirely.
-- `ORS_API_KEY` also has no `NEXT_PUBLIC_` prefix on purpose — unlike Mapbox's public tokens,
-  OpenRouteService keys aren't meant to be restricted by domain, so all calls go through the
-  `/api/places-search` route and the `calculateRoute` server action instead of straight from
-  the browser.
-- `.env.local` is in `.gitignore`. Never commit an `.env` file with real values; always use
-  `.env.example` as the template in the repo.
+   ```bash
+   npm install
+   cp .env.example .env.local
+   ```
 
-## Structure
+2. **Fill in `.env.local`** — see [`.env.example`](.env.example) for what each value is.
+   - Supabase: Project Settings → API Keys (`anon key`, `service_role key`) and Integrations →
+     Data API (`Project URL`).
+   - OpenRouteService: sign up at openrouteservice.org/dev/#/signup → Dashboard → API key.
+
+3. **Create the database.** Run the files in [`supabase/migrations`](supabase/migrations) in order
+   (`0001` → `0004`) in the Supabase SQL editor, or with `supabase db push`. **Don't skip the later
+   ones**: without them signup, viewing shared trips and the share feature itself are broken.
+
+4. **Configure Supabase Auth** (Authentication → URL Configuration): set the Site URL to your
+   deployment and add `<your-url>/auth/callback` to the redirect URLs. Google sign-in is optional
+   and is enabled under Authentication → Providers.
+
+5. **Run**
+
+   ```bash
+   npm run dev
+   ```
+
+`npm run dev` and `npm run build` first copy MapLibre's worker file into `public/maplibre/` (see
+[`scripts/copy-maplibre-worker.mjs`](scripts/copy-maplibre-worker.mjs) for why). That directory is
+generated and git-ignored.
+
+### Optional: a landing-page example trip
+
+If `NEXT_PUBLIC_DEMO_TRIP_ID` and `NEXT_PUBLIC_DEMO_TRIP_TOKEN` are both set, the landing page shows
+a "See an Example Trip" button that opens that trip's public share view. Leave them unset to hide
+the button.
+
+## Project structure
 
 ```
 src/
-  app/            Routes (App Router): auth, trips, API routes
-  components/     UI by domain: map/, trip/, ui/
-  lib/            Supabase client and OpenRouteService optimization call
+  app/            Routes (App Router): (auth), auth/ (OAuth + email callback), trips, settings, api
+  components/     UI by domain: map/, trip/, ui/, auth/, settings/
+  lib/            Supabase clients, OpenRouteService calls, shared helpers
+  hooks/          React hooks (geolocation)
   types/          Shared types (Trip, Stop, TripMember)
-  hooks/          React hooks (geolocation, etc.)
 supabase/
   migrations/     SQL schema + Row Level Security policies
+scripts/          Build-time helpers
 ```
 
-## Roadmap
+## Security model
 
-See the phase plan from the project conversation. Summary:
+Worth reading before you deploy your own, or if you're auditing this one.
 
-0. Account setup + scaffold (this commit)
-1. Trip and stop CRUD
-2. Map and place search integration
-3. Optimal route calculation
-4. Trip sharing (read-only link)
-5. Visual polish + PWA + deploy to Vercel
+- **Row Level Security is the access control.** Every table has RLS enabled; the policies live in
+  the migrations. The app talks to the database as the signed-in user, so a bug in application
+  code can't read another user's trips.
+- **The service-role key bypasses RLS and is server-only.** It is used in three files
+  (share-link lookups and copies, and account deletion), and each validates a share token or the
+  caller's own identity first. Never give it a `NEXT_PUBLIC_` prefix.
+- **A share link is a bearer secret.** Anyone holding it can view that trip. It carries a random
+  UUID that is not guessable, and the owner can rotate it from the trip's edit screen, which also
+  removes everyone who had saved the trip.
+- **The search and link-parsing endpoints require a session**, because they spend a shared
+  third-party quota. The link parser also only follows redirects between Google-owned hosts.
+- **A Content Security Policy and the usual security headers** are set in
+  [`next.config.js`](next.config.js). Scripts still allow `'unsafe-inline'` (Next.js bootstrap
+  scripts); the policy's value is in restricting framing, plugins and where requests may go.
+
+Found a vulnerability? Please open a private security advisory on this repository rather than a
+public issue.
+
+## License
+
+[MIT](LICENSE)
