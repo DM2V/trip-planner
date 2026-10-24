@@ -23,8 +23,9 @@ Level Security) · MapLibre GL with the free CARTO Voyager basemap · HeiGIT / O
 
 ## Running it yourself
 
-You need Node.js 18.17 or newer, a Supabase project, and an OpenRouteService API key (free, email
-signup only, no card).
+You need a Supabase project, an OpenRouteService API key (free, email signup only, no card) and
+Node.js: 18.17 or newer is enough to run the app, but the test suite needs 22.12 or newer, so use
+that if you're going to contribute.
 
 1. **Install**
 
@@ -62,6 +63,23 @@ If `NEXT_PUBLIC_DEMO_TRIP_ID` and `NEXT_PUBLIC_DEMO_TRIP_TOKEN` are both set, th
 a "See an Example Trip" button that opens that trip's public share view. Leave them unset to hide
 the button.
 
+## Development
+
+```bash
+npm run typecheck   # TypeScript, no emit
+npm run lint        # ESLint with the Next.js config
+npm test            # Vitest (npm run test:watch to keep it running)
+npm run build       # production build; also catches dependency upgrades that compile but break the bundle
+```
+
+CI runs those four on every push to `main` and every pull request. The tests pin the timezone to
+`America/New_York` on purpose: the date helpers guard against an off-by-one-day bug that only exists
+behind UTC, and CI machines run in UTC, where it would otherwise be invisible.
+
+Dependabot opens a weekly PR for routine minor and patch updates. Major upgrades of the framework
+stack (Next, React, Tailwind, TypeScript, ESLint) are left out deliberately, as is anything but
+patches for `@supabase/ssr`.
+
 ## Project structure
 
 ```
@@ -74,6 +92,8 @@ src/
 supabase/
   migrations/     SQL schema + Row Level Security policies
 scripts/          Build-time helpers
+tests/            Vitest suite
+.github/          CI workflow, Dependabot config
 ```
 
 ## Security model
