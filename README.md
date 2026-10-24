@@ -15,61 +15,6 @@ stop, and share the trip with a link. A mobile-first PWA built to feel like a na
   open any stop in Google Maps. They can make their own editable copy; the original is untouched.
   The owner can reset the link at any time.
 
-## Screenshots
-
-Mobile-first, shown at iPhone size (390 pt wide) with sample trips.
-
-<table>
-  <tr>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/01-landing.png" width="190" alt="Landing page with a short explanation and a button to open an example trip"><br>
-      <sub><b>Landing</b><br>See an example without signing up</sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/02-trips.png" width="190" alt="List of trips with their dates"><br>
-      <sub><b>Your trips</b></sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/03-trip-route.png" width="190" alt="A trip with the optimised route drawn on the map and distance labels between stops"><br>
-      <sub><b>The route</b><br>Real roads, with time per stop</sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/04-stops.png" width="190" alt="Ordered list of stops with the distance and time between each one"><br>
-      <sub><b>Stops in order</b><br>Distance between each</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/05-route-choice.png" width="190" alt="Prompt asking whether the route should return to the starting point"><br>
-      <sub><b>Round trip or one-way</b></sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/06-stop-sheet.png" width="190" alt="Action sheet to view a stop in Google Maps or get directions to it"><br>
-      <sub><b>Open a stop</b><br>View place or directions</sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/07-shared.png" width="190" alt="A shared trip as a visitor sees it, with a button to make an editable copy"><br>
-      <sub><b>Shared trip</b><br>No account needed to open</sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/08-shared-tour.png" width="190" alt="First-visit tour highlighting the list of stops"><br>
-      <sub><b>First-visit tour</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/09-edit.png" width="190" alt="Edit trip form with a button to reset the share link"><br>
-      <sub><b>Edit &amp; reset link</b></sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/screenshots/10-trip-route-dark.png" width="190" alt="The trip screen in dark mode"><br>
-      <sub><b>Dark mode</b></sub>
-    </td>
-    <td></td>
-    <td></td>
-  </tr>
-</table>
-
 ## Stack
 
 Next.js 14 (App Router, Server Actions) · TypeScript · Tailwind CSS · Supabase (Auth, Postgres, Row
