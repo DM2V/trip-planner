@@ -103,3 +103,11 @@ export function googleMapsDirectionsUrl(lat: number, lng: number) {
 export function googleMapsPlaceUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
+
+// Nothing upstream stops a trip being saved with an end date before its start — the date inputs
+// have no `min`/cross-field JS validation — and RouteSummary's day-count math would otherwise just
+// clamp that to "1 day" and confidently report a stop-time recommendation for a nonsensical range.
+export function validateTripDates(startDate: string, endDate: string): string | null {
+  if (endDate < startDate) return "End date can't be before the start date";
+  return null;
+}

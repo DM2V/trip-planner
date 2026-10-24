@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  describeUnreachablePoint,
   getOptimizedRoute,
   getRouteForSequence,
   UnroutableCoordinateError,
@@ -12,14 +13,7 @@ import {
 import type { LatLng } from "@/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-
-// Nothing upstream stops a trip being saved with an end date before its start — the date inputs
-// have no `min`/cross-field JS validation — and RouteSummary's day-count math would otherwise just
-// clamp that to "1 day" and confidently report a stop-time recommendation for a nonsensical range.
-function validateTripDates(startDate: string, endDate: string): string | null {
-  if (endDate < startDate) return "End date can't be before the start date";
-  return null;
-}
+import { validateTripDates } from "@/lib/utils";
 
 export async function createTrip(formData: FormData) {
   const supabase = createClient();
@@ -335,22 +329,6 @@ export async function resolvePostLoginRedirect(): Promise<string> {
     console.error("resolvePostLoginRedirect: failed to copy pending shared trip:", err);
   }
   return "/trips";
-}
-
-// Matches an ORS "unroutable coordinate" back to a human-readable name, within a small tolerance
-// (ORS's error message rounds the coordinate) so the user finds out *which* stop is the problem
-// instead of the whole calculation just failing.
-function describeUnreachablePoint(
-  point: LatLng,
-  origin: LatLng,
-  stops: { name: string; lat: number; lng: number }[],
-): string {
-  const TOLERANCE = 0.001; // ~100m — comfortably wider than ORS's own rounding
-  const isNear = (a: LatLng) => Math.abs(a.lat - point.lat) < TOLERANCE && Math.abs(a.lng - point.lng) < TOLERANCE;
-
-  if (isNear(origin)) return "your starting point";
-  const stop = stops.find(isNear);
-  return stop ? `"${stop.name}"` : "one of your stops";
 }
 
 // Next.js redacts any error thrown from a Server Action in production (see

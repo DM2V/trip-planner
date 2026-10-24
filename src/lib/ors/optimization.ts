@@ -45,6 +45,22 @@ export class UnroutableCoordinateError extends Error {
   }
 }
 
+// Matches an ORS "unroutable coordinate" back to a human-readable name, within a small tolerance
+// (ORS's error message rounds the coordinate) so the user finds out *which* stop is the problem
+// instead of the whole calculation just failing.
+export function describeUnreachablePoint(
+  point: LatLng,
+  origin: LatLng,
+  stops: { name: string; lat: number; lng: number }[],
+): string {
+  const TOLERANCE = 0.001; // ~100m — comfortably wider than ORS's own rounding
+  const isNear = (a: LatLng) => Math.abs(a.lat - point.lat) < TOLERANCE && Math.abs(a.lng - point.lng) < TOLERANCE;
+
+  if (isNear(origin)) return "your starting point";
+  const stop = stops.find(isNear);
+  return stop ? `"${stop.name}"` : "one of your stops";
+}
+
 // ORS's "could not find routable point" error embeds the offending coordinate as "lng lat" —
 // e.g. `Could not find routable point within a radius of 350.0 meters of specified coordinate
 // 1: -74.0445000 40.6892490.` Parsed out of the response body so failures for an unreachable
