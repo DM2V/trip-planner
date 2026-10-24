@@ -53,6 +53,10 @@ const nextConfig = {
   // Production builds only mount once regardless, so this only affects the dev overlay.
   reactStrictMode: false,
 
+  // `next lint` and the lint step of `next build` only look at a few default folders; the tests
+  // are code too.
+  eslint: { dirs: ["src", "tests"] },
+
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
