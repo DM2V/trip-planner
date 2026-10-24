@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Nothing here writes to the repo, so the token gets read access only.
+permissions:
+  contents: read
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Vitest 5 needs Node 22.12 or newer.
+          node-version: 22
+          cache: npm
+
+      # `ci` installs exactly what package-lock.json says and fails if it disagrees with
+      # package.json, which is the point.
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Catches what the checks above can't: a dependency upgrade that compiles but breaks the
+      # bundle. (maplibre-gl 6 did exactly that — see scripts/copy-maplibre-worker.mjs.)
+      - name: Build
+        run: npm run build
+        env:
+          # Placeholders: nothing is contacted at build time, the app only needs these to exist.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
