@@ -53,6 +53,14 @@ const nextConfig = {
   // Production builds only mount once regardless, so this only affects the dev overlay.
   reactStrictMode: false,
 
+  // Our Server Actions only receive form fields (email, password, short text) — well under 64 KB.
+  // Setting this explicitly prevents the 1 MB default from becoming an attack surface if a future
+  // action accidentally accepts arbitrary input.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "64kb",
+    },
+  },
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

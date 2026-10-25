@@ -6,10 +6,18 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import { signup } from "../actions";
 
+// Fixed messages keyed by the ?error= query param. Never rendered from raw URL text.
+const ERRORS: Record<string, string> = {
+  "email-taken": "An account with that email already exists.",
+  "weak-password": "Password must be at least 6 characters.",
+  generic: "Something went wrong — please try again.",
+};
+
 export default async function SignupPage(props: {
-  searchParams: Promise<{ error?: string; message?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const searchParams = await props.searchParams;
+  const error = searchParams.error ? (ERRORS[searchParams.error] ?? null) : null;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
       <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">
@@ -19,11 +27,8 @@ export default async function SignupPage(props: {
 
       <h1 className="text-center text-[1.75rem] font-bold tracking-tight">Create account</h1>
 
-      {searchParams.message && (
-        <p className="tinted-accent rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.message}</p>
-      )}
-      {searchParams.error && (
-        <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.error}</p>
+      {error && (
+        <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{error}</p>
       )}
 
       <GoogleLoginButton />

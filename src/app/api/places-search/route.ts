@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectIfSignedOut } from "@/lib/apiAuth";
+import { allow } from "@/lib/rateLimit";
 
 const ORS_API_KEY = process.env.ORS_API_KEY;
 
@@ -8,6 +9,12 @@ const ORS_API_KEY = process.env.ORS_API_KEY;
 export async function GET(request: NextRequest) {
   const signedOut = await rejectIfSignedOut();
   if (signedOut) return signedOut;
+
+  // 120 searches per minute per IP; the ORS free tier has a per-key cap this guards against.
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!allow(`places-search:${ip}`, 120, 60_000)) {
+    return NextResponse.json({ error: "Too many requests — slow down a moment" }, { status: 429 });
+  }
 
   const query = request.nextUrl.searchParams.get("q");
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectIfSignedOut } from "@/lib/apiAuth";
 import { isGoogleMapsUrl } from "@/lib/googleMapsLink";
+import { allow } from "@/lib/rateLimit";
 
 const MAX_REDIRECTS = 5;
 const REQUEST_TIMEOUT_MS = 8000;
@@ -132,6 +133,12 @@ async function fetchFollowingAllowedRedirects(startUrl: string): Promise<Respons
 export async function GET(request: NextRequest) {
   const signedOut = await rejectIfSignedOut();
   if (signedOut) return signedOut;
+
+  // 20 link-parses per minute per IP; each may fetch an external page + geocode.
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!allow(`parse-maps-link:${ip}`, 20, 60_000)) {
+    return NextResponse.json({ error: "Too many requests — slow down a moment" }, { status: 429 });
+  }
 
   const link = request.nextUrl.searchParams.get("url");
 

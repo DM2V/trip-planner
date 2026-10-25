@@ -13,7 +13,9 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    // Use a fixed key, not the raw Supabase message, so the URL can't be crafted to show arbitrary text.
+    const key = error.message.toLowerCase().includes("invalid") ? "credentials" : "generic";
+    redirect(`/login?error=${key}`);
   }
 
   redirect(await resolvePostLoginRedirect());
@@ -28,17 +30,17 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    const msg = error.message.toLowerCase();
+    const key = msg.includes("already") || msg.includes("registered")
+      ? "email-taken"
+      : msg.includes("password")
+      ? "weak-password"
+      : "generic";
+    redirect(`/signup?error=${key}`);
   }
 
-  // The confirmation link signs them in on arrival (see app/auth/callback) — telling them to come
-  // back and log in sent people to a login form they didn't need, right at the point where most
-  // first-time visitors were already dropping off.
-  redirect(
-    `/login?message=${encodeURIComponent(
-      "Almost there — open the confirmation link we just emailed you and you'll be signed straight in.",
-    )}`,
-  );
+  // The confirmation link signs them in on arrival (see app/auth/callback).
+  redirect("/login?msg=confirm-email");
 }
 
 export async function logout() {
