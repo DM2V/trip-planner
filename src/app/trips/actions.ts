@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 import { validateTripDates } from "@/lib/utils";
 
 export async function createTrip(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -51,7 +51,7 @@ export async function createTrip(formData: FormData) {
 }
 
 export async function updateTrip(tripId: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: trip } = await supabase
     .from("trips")
@@ -99,7 +99,7 @@ export async function addStop(
   tripId: string,
   place: { label: string; lat: number; lng: number },
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("stops").insert({
     trip_id: tripId,
@@ -118,7 +118,7 @@ export async function addStop(
 }
 
 export async function deleteStop(tripId: string, stopId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("stops").delete().eq("id", stopId);
 
   if (error) throw new Error(error.message);
@@ -132,7 +132,7 @@ export async function deleteStop(tripId: string, stopId: string) {
 // "trips: owner has full control" policy is what actually stops a non-owner from doing this —
 // this action doesn't check ownership itself.
 export async function deleteTrip(tripId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("trips").delete().eq("id", tripId);
 
   if (error) throw new Error(error.message);
@@ -153,7 +153,7 @@ export async function deleteTrip(tripId: string) {
 // rather than relying on that alone. Returns data, not a throw, per the Server Action error
 // redaction note above calculateRoute.
 export async function resetShareLink(tripId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -196,7 +196,7 @@ export async function resetShareLink(tripId: string): Promise<{ error?: string }
 // member yet — we verify the share_token ourselves (via the admin client) before writing,
 // same authorization the "trips: viewers can read" RLS policy would otherwise provide.
 export async function joinSharedTrip(tripId: string, token: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const admin = createAdminClient();
 
   // The share-token lookup doesn't depend on the resolved user, so it runs alongside the auth
@@ -231,7 +231,7 @@ export async function joinSharedTrip(tripId: string, token: string) {
 // copy — a new trips row (fresh id, fresh share_token) they own, with the stops duplicated under
 // it. Returns the new trip's id, or null if the current user isn't logged in or the token is bad.
 export async function copySharedTrip(tripId: string, token: string): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const admin = createAdminClient();
 
   const {
@@ -300,7 +300,7 @@ export async function copySharedTripNow(tripId: string, token: string) {
 const PENDING_TRIP_COPY_COOKIE = "pending_trip_copy";
 
 export async function requestTripCopyOnSignup(tripId: string, token: string) {
-  cookies().set(PENDING_TRIP_COPY_COOKIE, JSON.stringify({ tripId, token }), {
+  (await cookies()).set(PENDING_TRIP_COPY_COOKIE, JSON.stringify({ tripId, token }), {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -316,7 +316,7 @@ export async function requestTripCopyOnSignup(tripId: string, token: string) {
 // callback route — so a pending copy request gets fulfilled regardless of which one the visitor
 // used to actually log in.
 export async function resolvePostLoginRedirect(): Promise<string> {
-  const store = cookies();
+  const store = await cookies();
   const pending = store.get(PENDING_TRIP_COPY_COOKIE)?.value;
   if (!pending) return "/trips";
 
@@ -335,7 +335,7 @@ export async function resolvePostLoginRedirect(): Promise<string> {
 // https://github.com/vercel/next.js/issues/71101) — so failures here are returned as data
 // instead, or the caller only ever sees a generic, unhelpful message.
 export async function calculateRoute(tripId: string, roundTrip: boolean): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // The stops query only depends on tripId, not on the trip row, so it runs concurrently with the
   // trip fetch instead of waiting on it. If the trip turns out not to exist, the stops result is

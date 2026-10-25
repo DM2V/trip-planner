@@ -33,7 +33,7 @@ export function PlaceSearchInput({
   const [loading, setLoading] = useState(false);
   const [submittingIndex, setSubmittingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Debouncing only cancels a *pending* timeout, not a fetch that's already in flight — pasting a
   // link and then quickly typing a normal query starts the (slower) link lookup, then the (faster)
   // text search, and without this the link lookup could still resolve *after* the search and

@@ -17,15 +17,14 @@ stop, and share the trip with a link. A mobile-first PWA built to feel like a na
 
 ## Stack
 
-Next.js 14 (App Router, Server Actions) · TypeScript · Tailwind CSS · Supabase (Auth, Postgres, Row
+Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CSS · Supabase (Auth, Postgres, Row
 Level Security) · MapLibre GL with the free CARTO Voyager basemap · HeiGIT / OpenRouteService
 (VROOM optimisation, Directions, Pelias geocoding) · Vercel.
 
 ## Running it yourself
 
 You need a Supabase project, an OpenRouteService API key (free, email signup only, no card) and
-Node.js: 18.17 or newer is enough to run the app, but the test suite needs 22.12 or newer, so use
-that if you're going to contribute.
+Node.js 22.12 or newer (Next 16 needs 20.9, and the test suite needs 22.12).
 
 1. **Install**
 

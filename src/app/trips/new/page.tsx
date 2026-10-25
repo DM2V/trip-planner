@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { createTrip } from "@/app/trips/actions";
 import { PlaceSearchInput } from "@/components/trip/PlaceSearchInput";
 import { FormRow } from "@/components/ui/FormRow";
@@ -13,11 +13,9 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 // Times Square — fallback origin if the user picks neither a search result nor their GPS location.
 const DEFAULT_ORIGIN = { label: "Times Square, New York", lat: 40.758, lng: -73.9855 };
 
-export default function NewTripPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
+export default function NewTripPage(props: { searchParams: Promise<{ error?: string }> }) {
+  // Next 16 hands client pages their search params as a Promise; use() unwraps it.
+  const searchParams = use(props.searchParams);
   const [origin, setOrigin] = useState<{ label: string; lat: number; lng: number } | null>(null);
   const geolocation = useGeolocation();
 

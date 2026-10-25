@@ -47,6 +47,7 @@ export default function GlobalError({
               Try Again
             </button>
             {/* A plain <a>, not next/link: the router may be the very thing that's broken. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/trips" className="btn secondary">
               Go to My Trips
             </a>

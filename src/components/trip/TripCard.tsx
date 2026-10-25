@@ -17,7 +17,7 @@ export function TripCard({ trip }: { trip: Trip }) {
   const [hidden, setHidden] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const undoTimer = useRef<ReturnType<typeof setTimeout>>();
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     return () => {

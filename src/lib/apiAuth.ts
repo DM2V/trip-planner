@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function rejectIfSignedOut(): Promise<NextResponse | null> {
   const {
     data: { user },
-  } = await createClient().auth.getUser();
+  } = await (await createClient()).auth.getUser();
 
   if (user) return null;
   return NextResponse.json({ error: "Log in to search for places" }, { status: 401 });

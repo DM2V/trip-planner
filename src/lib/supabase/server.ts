@@ -6,8 +6,8 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 // Client for Server Components / Route Handlers. Uses the anon key + the user's session cookies,
 // so it still respects RLS. SUPABASE_SERVICE_ROLE_KEY is not used here — see lib/supabase/admin.ts
 // for the narrow, explicitly-authorized cases (e.g. share links) where RLS is bypassed on purpose.
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +24,7 @@ export function createClient() {
             );
           } catch {
             // Called from a Server Component render, which can't set cookies — safe to
-            // ignore because the middleware below refreshes the session on every request.
+            // ignore because the proxy (src/proxy.ts) refreshes the session on every request.
           }
         },
       },

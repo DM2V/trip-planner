@@ -27,17 +27,16 @@ function InvalidLink() {
 
 // Public, token-gated read-only view — no login required to see the route. Uses the admin
 // client since an anonymous or non-member visitor wouldn't pass the trips/stops RLS policies.
-export default async function SharedTripPage({
-  params,
-  searchParams,
-}: {
-  params: { tripId: string };
-  searchParams: { token?: string };
+export default async function SharedTripPage(props: {
+  params: Promise<{ tripId: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
   if (!searchParams.token) return <InvalidLink />;
 
   const admin = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // The stops fetch only depends on params.tripId (not on the trip row), and the auth check is
   // unrelated to either — so all three run concurrently instead of one after another. If the

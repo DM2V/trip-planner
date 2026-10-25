@@ -74,6 +74,7 @@ export function SharedTripTour({ hasRoute }: { hasRoute: boolean }) {
     }
     if (seen) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- depends on localStorage and on which elements are in the DOM, both only knowable after mount
     setSteps(buildSteps(hasRoute).filter((step) => targetElement(step)));
   }, [hasRoute]);
 

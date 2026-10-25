@@ -4,14 +4,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 import { requireTripOwner } from "@/lib/tripAccess";
 
-export default async function EditTripPage({
-  params,
-  searchParams,
-}: {
-  params: { tripId: string };
-  searchParams: { error?: string };
+export default async function EditTripPage(props: {
+  params: Promise<{ tripId: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const supabase = createClient();
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

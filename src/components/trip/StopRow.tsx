@@ -25,7 +25,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
   const [undoVisible, setUndoVisible] = useState(false);
   const [mapsSheetOpen, setMapsSheetOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const undoTimer = useRef<ReturnType<typeof setTimeout>>();
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // The leg from the previous stop (or the trip's origin, for position 1) to this one — absent
   // until a route has been calculated, or for routes calculated before this field existed.

@@ -13,12 +13,11 @@ import { createClient } from "@/lib/supabase/server";
 import { requireTripOwner } from "@/lib/tripAccess";
 import type { OptimizedRoutes } from "@/lib/ors/optimization";
 
-export default async function TripDetailPage({
-  params,
-}: {
-  params: { tripId: string };
+export default async function TripDetailPage(props: {
+  params: Promise<{ tripId: string }>;
 }) {
-  const supabase = createClient();
+  const params = await props.params;
+  const supabase = await createClient();
 
   // The stops query only depends on params.tripId (already known from the URL), not on the trip
   // row or the resolved user, so it's fired concurrently with the auth check and trip fetch

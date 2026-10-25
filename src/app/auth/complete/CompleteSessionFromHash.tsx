@@ -53,6 +53,7 @@ export function CompleteSessionFromHash() {
     window.history.replaceState(null, "", window.location.pathname);
 
     if (!accessToken || !refreshToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL fragment only exists in the browser, so it can only be read after mount
       setFailed(true);
       return;
     }

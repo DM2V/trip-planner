@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 // Server Actions redact thrown error messages in production (see the same fix in
 // app/trips/actions.ts's calculateRoute), so failure is returned as data instead of thrown.
 export async function deleteAccount(): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -6,11 +6,10 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import { login } from "../actions";
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; message?: string };
+export default async function LoginPage(props: {
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
       <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">

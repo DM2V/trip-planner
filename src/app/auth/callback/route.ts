@@ -6,12 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 //
 // This has to be a route handler, not a page. Exchanging the code writes the session cookies, and
 // a Server Component render cannot set cookies — lib/supabase/server.ts swallows that failure on
-// purpose, because for an ordinary page render the middleware will refresh the session anyway.
+// purpose, because for an ordinary page render the proxy (src/proxy.ts) will refresh the session anyway.
 // That reasoning does not hold here: this is the one request where the session is *created*, so
-// there is nothing for the middleware to refresh and the sign-in is silently lost.
+// there is nothing for the proxy to refresh and the sign-in is silently lost.
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   if (code) {
     await supabase.auth.exchangeCodeForSession(code);

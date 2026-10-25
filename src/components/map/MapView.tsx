@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -93,15 +93,19 @@ export function MapView({ markers, routeGeometry = null, legs = null, readOnly =
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const loadedRef = useRef(false);
+  // Latest route/markers/legs, read inside the one-time map.on("load") callback below — a plain
+  // closure over the props would only see whatever they were on the render that first mounted the
+  // map. Kept current from a layout effect rather than during render (React 19's rules forbid
+  // writing refs while rendering); layout effects run before the effect that mounts the map, so
+  // the load callback still sees the latest values.
   const routeGeometryRef = useRef(routeGeometry);
-  routeGeometryRef.current = routeGeometry;
-  // Latest markers/legs, read once inside the one-time map.on("load") callback below — a plain
-  // closure over the `markers`/`legs` params would only see whatever they were on the render that
-  // first mounted the map, same reasoning as routeGeometryRef.
   const markersDataRef = useRef(markers);
-  markersDataRef.current = markers;
   const legsRef = useRef(legs);
-  legsRef.current = legs;
+  useLayoutEffect(() => {
+    routeGeometryRef.current = routeGeometry;
+    markersDataRef.current = markers;
+    legsRef.current = legs;
+  });
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;

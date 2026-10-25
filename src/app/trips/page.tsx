@@ -8,7 +8,7 @@ import { PlusIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function TripsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // The trips query doesn't reference the resolved user object — RLS scopes it to the current
   // session automatically — so it's fired alongside the auth check instead of waiting on it. If

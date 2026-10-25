@@ -72,6 +72,7 @@ export function ThemeToggle() {
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     if (stored === "light" || stored === "dark") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage only exists in the browser; reading it during render would mismatch the server HTML
       setPreference(stored);
       // The inline <head> script already set data-theme before paint, but it can't touch the
       // theme-color meta tag — sync that here so a persisted override is reflected immediately
