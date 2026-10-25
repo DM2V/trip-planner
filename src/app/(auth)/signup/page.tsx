@@ -6,7 +6,10 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import { signup } from "../actions";
 
-// Fixed messages keyed by the ?error= query param. Never rendered from raw URL text.
+// Fixed messages keyed by ?msg= and ?error= query params. Never rendered from raw URL text.
+const MSGS: Record<string, string> = {
+  "copy-trip": "Create an account to get your own editable copy of this trip.",
+};
 const ERRORS: Record<string, string> = {
   "email-taken": "An account with that email already exists.",
   "weak-password": "Password must be at least 6 characters.",
@@ -14,9 +17,10 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function SignupPage(props: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; msg?: string }>;
 }) {
   const searchParams = await props.searchParams;
+  const message = searchParams.msg ? (MSGS[searchParams.msg] ?? null) : null;
   const error = searchParams.error ? (ERRORS[searchParams.error] ?? null) : null;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
@@ -27,6 +31,9 @@ export default async function SignupPage(props: {
 
       <h1 className="text-center text-[1.75rem] font-bold tracking-tight">Create account</h1>
 
+      {message && (
+        <p className="tinted-accent rounded-2xl px-4 py-3 text-[0.9375rem]">{message}</p>
+      )}
       {error && (
         <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{error}</p>
       )}

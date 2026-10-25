@@ -27,13 +27,19 @@ function InvalidLink() {
 
 // Public, token-gated read-only view — no login required to see the route. Uses the admin
 // client since an anonymous or non-member visitor wouldn't pass the trips/stops RLS policies.
+// Fixed error messages keyed by ?error= query param. Never rendered from raw URL text.
+const ERRORS: Record<string, string> = {
+  "copy-failed": "Couldn't copy this trip — please try again.",
+};
+
 export default async function SharedTripPage(props: {
   params: Promise<{ tripId: string }>;
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; error?: string }>;
 }) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   if (!searchParams.token) return <InvalidLink />;
+  const errorMessage = searchParams.error ? (ERRORS[searchParams.error] ?? null) : null;
 
   const admin = createAdminClient();
   const supabase = await createClient();
@@ -117,6 +123,10 @@ export default async function SharedTripPage(props: {
             </ListSection>
           </div>
 
+          {errorMessage && (
+            <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{errorMessage}</p>
+          )}
+
           {user ? (
             <div data-tour="save" className="flex flex-col gap-3">
               <JoinTripButton tripId={trip.id} token={trip.share_token} />
@@ -142,7 +152,7 @@ export default async function SharedTripPage(props: {
               <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">
                 Already have an account?{" "}
                 <a
-                  href={`/login?message=${encodeURIComponent("Log in to save this trip to your list.")}`}
+                  href="/login?msg=save-trip"
                   className="font-medium text-[var(--color-accent)]"
                 >
                   Log in

@@ -13,6 +13,12 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 // Times Square — fallback origin if the user picks neither a search result nor their GPS location.
 const DEFAULT_ORIGIN = { label: "Times Square, New York", lat: 40.758, lng: -73.9855 };
 
+// Fixed error messages keyed by ?error= query param. Never rendered from raw URL text.
+const ERRORS: Record<string, string> = {
+  "invalid-dates": "End date can't be before the start date.",
+  "save-failed": "Couldn't save the trip — please try again.",
+};
+
 export default function NewTripPage(props: { searchParams: Promise<{ error?: string }> }) {
   // Next 16 hands client pages their search params as a Promise; use() unwraps it.
   const searchParams = use(props.searchParams);
@@ -30,8 +36,8 @@ export default function NewTripPage(props: { searchParams: Promise<{ error?: str
       <PageHeader title="New Trip" backHref="/trips" backLabel="Trips" />
 
       <form action={createTrip} className="flex flex-col gap-6 px-4">
-        {searchParams.error && (
-          <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{searchParams.error}</p>
+        {searchParams.error && ERRORS[searchParams.error] && (
+          <p className="tinted-error rounded-2xl px-4 py-3 text-[0.9375rem]">{ERRORS[searchParams.error]}</p>
         )}
 
         <ListSection>

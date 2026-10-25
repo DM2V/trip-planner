@@ -4,12 +4,19 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 import { requireTripOwner } from "@/lib/tripAccess";
 
+// Fixed error messages keyed by ?error= query param. Never rendered from raw URL text.
+const ERRORS: Record<string, string> = {
+  "invalid-dates": "End date can't be before the start date.",
+  "save-failed": "Couldn't save the trip — please try again.",
+};
+
 export default async function EditTripPage(props: {
   params: Promise<{ tripId: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
   const params = await props.params;
   const searchParams = await props.searchParams;
+  const errorMessage = searchParams.error ? (ERRORS[searchParams.error] ?? undefined) : undefined;
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,7 +42,7 @@ export default async function EditTripPage(props: {
         originLabel={trip.origin_label}
         originLat={trip.origin_lat}
         originLng={trip.origin_lng}
-        error={searchParams.error}
+        error={errorMessage}
       />
       <ResetShareLinkButton tripId={trip.id} />
     </main>

@@ -26,7 +26,7 @@ export async function createTrip(formData: FormData) {
   const startDate = formData.get("start_date") as string;
   const endDate = formData.get("end_date") as string;
   const dateError = validateTripDates(startDate, endDate);
-  if (dateError) redirect(`/trips/new?error=${encodeURIComponent(dateError)}`);
+  if (dateError) redirect("/trips/new?error=invalid-dates");
 
   const { data: trip, error } = await supabase
     .from("trips")
@@ -44,7 +44,7 @@ export async function createTrip(formData: FormData) {
 
   if (error || !trip) {
     console.error("createTrip failed:", error);
-    redirect(`/trips/new?error=${encodeURIComponent(error?.message ?? "Could not create trip")}`);
+    redirect("/trips/new?error=save-failed");
   }
 
   redirect(`/trips/${trip.id}`);
@@ -63,7 +63,7 @@ export async function updateTrip(tripId: string, formData: FormData) {
   const startDate = formData.get("start_date") as string;
   const endDate = formData.get("end_date") as string;
   const dateError = validateTripDates(startDate, endDate);
-  if (dateError) redirect(`/trips/${tripId}/edit?error=${encodeURIComponent(dateError)}`);
+  if (dateError) redirect(`/trips/${tripId}/edit?error=invalid-dates`);
 
   const originLat = Number(formData.get("origin_lat"));
   const originLng = Number(formData.get("origin_lng"));
@@ -88,7 +88,7 @@ export async function updateTrip(tripId: string, formData: FormData) {
     .eq("id", tripId);
 
   if (error) {
-    redirect(`/trips/${tripId}/edit?error=${encodeURIComponent(error.message)}`);
+    redirect(`/trips/${tripId}/edit?error=save-failed`);
   }
 
   revalidatePath(`/trips/${tripId}`);
@@ -285,7 +285,7 @@ export async function copySharedTrip(tripId: string, token: string): Promise<str
 export async function copySharedTripNow(tripId: string, token: string) {
   const newTripId = await copySharedTrip(tripId, token);
   if (!newTripId) {
-    redirect(`/trips/${tripId}/share?token=${token}&error=${encodeURIComponent("Could not copy this trip")}`);
+    redirect(`/trips/${tripId}/share?token=${token}&error=copy-failed`);
   }
   redirect(`/trips/${newTripId}`);
 }
@@ -307,9 +307,7 @@ export async function requestTripCopyOnSignup(tripId: string, token: string) {
     maxAge: 60 * 60, // an hour is plenty to sign up, confirm by email, and log back in
     path: "/",
   });
-  redirect(
-    `/signup?message=${encodeURIComponent("Create an account to get your own editable copy of this trip.")}`,
-  );
+  redirect("/signup?msg=copy-trip");
 }
 
 // Called right after a successful login — both the password form (auth)/actions.ts and the OAuth

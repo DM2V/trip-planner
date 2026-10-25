@@ -9,6 +9,7 @@ import { login } from "../actions";
 // Fixed messages keyed by the ?msg= and ?error= query params. Never rendered from raw URL text.
 const MSG: Record<string, string> = {
   "confirm-email": "Almost there — open the confirmation link we just emailed you and you'll be signed straight in.",
+  "save-trip": "Log in to save this trip to your list.",
 };
 const ERRORS: Record<string, string> = {
   credentials: "Incorrect email or password.",
