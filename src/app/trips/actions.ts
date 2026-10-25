@@ -266,7 +266,7 @@ export async function copySharedTrip(tripId: string, token: string): Promise<str
   if (tripError || !newTrip) return null;
 
   if (originalStops && originalStops.length > 0) {
-    await supabase.from("stops").insert(
+    const { error: stopsError } = await supabase.from("stops").insert(
       originalStops.map((stop) => ({
         trip_id: newTrip.id,
         name: stop.name,
@@ -275,6 +275,12 @@ export async function copySharedTrip(tripId: string, token: string): Promise<str
         order_index: stop.order_index,
       })),
     );
+    if (stopsError) {
+      // The trip row exists but is empty — roll it back so the user doesn't land on a blank trip.
+      console.error("copySharedTrip: stops insert failed, rolling back trip:", stopsError);
+      await supabase.from("trips").delete().eq("id", newTrip.id);
+      return null;
+    }
   }
 
   revalidatePath("/trips");
@@ -355,11 +361,13 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
 
   const origin = { lat: trip.origin_lat, lng: trip.origin_lng };
 
+  let driving: Awaited<ReturnType<typeof getOptimizedRoute>> | null = null;
+
   try {
     // Driving picks the visiting order (it's the default view); walking then reuses that exact
     // order via a plain Directions call instead of re-optimizing, so the two profiles never
     // disagree on which stop comes next — only on how long each leg takes.
-    const driving = await getOptimizedRoute(
+    driving = await getOptimizedRoute(
       origin,
       stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
       "driving-car",
@@ -369,7 +377,7 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     // Only append the origin as a closing waypoint for a round trip — same choice driving's
     // start/end above just made — so ORS Directions' segments come back with one extra leg (the
     // return trip) for free when it applies, no separate call needed either way.
-    const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
+    const orderedStops = driving!.order.map((stopIndex: number) => stops[stopIndex]);
     const walkingWaypoints = [
       origin,
       ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
@@ -399,15 +407,6 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     };
 
     await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
-
-    await Promise.all(
-      driving.order.map((stopIndex: number, visitPosition: number) =>
-        supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
-      ),
-    );
-
-    revalidatePath(`/trips/${tripId}`);
-    return {};
   } catch (err) {
     if (err instanceof UnroutableCoordinateError) {
       const place = describeUnreachablePoint({ lat: err.lat, lng: err.lng }, origin, stops);
@@ -420,4 +419,19 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     console.error("calculateRoute failed:", err);
     return { error: "Could not calculate the route. Please try again in a moment." };
   }
+
+  // Order index updates are best-effort and run after the route is already saved — a failure here
+  // only affects the visual ordering of stops in the list (the optimized_route already has the
+  // correct sequence). Running them outside the try block means a transient DB error won't report
+  // a fake "route failed" to the user when the route was in fact saved successfully.
+  if (driving) {
+    await Promise.all(
+      driving.order.map((stopIndex: number, visitPosition: number) =>
+        supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
+      ),
+    );
+  }
+
+  revalidatePath(`/trips/${tripId}`);
+  return {};
 }

@@ -31,16 +31,17 @@ export async function GET(request: NextRequest) {
   // location when picking that origin) so a name that matches places in several cities ranks the
   // nearby one first — without this, Pelias only ranks by text relevance and can just as easily
   // surface a same-named place on the other side of the world above the one actually meant.
+  // Validate as numbers before forwarding — passing a non-numeric string would give ORS a 400.
   const focusLat = request.nextUrl.searchParams.get("focusLat");
   const focusLng = request.nextUrl.searchParams.get("focusLng");
-  if (focusLat && focusLng) {
+  if (focusLat && focusLng && Number.isFinite(Number(focusLat)) && Number.isFinite(Number(focusLng))) {
     url.searchParams.set("focus.point.lat", focusLat);
     url.searchParams.set("focus.point.lon", focusLng);
   }
 
   let response: Response;
   try {
-    response = await fetch(url.toString());
+    response = await fetch(url.toString(), { signal: AbortSignal.timeout(8_000) });
   } catch {
     // A network-level failure (DNS, timeout, connection reset) would otherwise surface as an
     // unhandled 500 with no usable message for the client to show.

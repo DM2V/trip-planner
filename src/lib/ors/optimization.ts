@@ -91,6 +91,7 @@ export async function getOptimizedRoute(
   // api.openrouteservice.org was shut off on 2026-08-24 in favor of api.heigit.org (unified HeiGIT API).
   const response = await fetch("https://api.heigit.org/vroom/v0", {
     method: "POST",
+    signal: AbortSignal.timeout(20_000),
     headers: {
       Authorization: ORS_API_KEY ?? "",
       "Content-Type": "application/json",
@@ -117,7 +118,8 @@ export async function getOptimizedRoute(
   }
 
   const data = await response.json();
-  const route = data.routes[0];
+  const route = data.routes?.[0];
+  if (!route) throw new Error("OpenRouteService returned no route");
 
   // VROOM's per-step distance/duration are cumulative from the route's start, not deltas — so
   // each leg is the difference between one step and the one before it (the vehicle's "start" step
@@ -166,6 +168,7 @@ export async function getOptimizedRoute(
 export async function getRouteForSequence(waypoints: LatLng[], profile: TravelProfile): Promise<RouteMetrics> {
   const response = await fetch(`https://api.heigit.org/openrouteservice/v2/directions/${profile}/geojson`, {
     method: "POST",
+    signal: AbortSignal.timeout(20_000),
     headers: {
       Authorization: ORS_API_KEY ?? "",
       "Content-Type": "application/json",
@@ -178,7 +181,8 @@ export async function getRouteForSequence(waypoints: LatLng[], profile: TravelPr
   }
 
   const data = await response.json();
-  const feature = data.features[0];
+  const feature = data.features?.[0];
+  if (!feature) throw new Error("OpenRouteService Directions returned no feature");
 
   // Unlike VROOM's cumulative step distances, ORS Directions' `segments` are already one entry
   // per leg between consecutive waypoints — no diffing needed.
