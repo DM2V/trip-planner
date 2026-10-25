@@ -4,26 +4,31 @@ import { FormRow } from "@/components/ui/FormRow";
 import { ListSection } from "@/components/ui/List";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ChevronLeftIcon } from "@/components/ui/icons";
+import { ClearOfflineCache } from "@/components/auth/ClearOfflineCache";
 import { login } from "../actions";
 
-// Fixed messages keyed by the ?msg= and ?error= query params. Never rendered from raw URL text.
+// Fixed text for the ?msg= and ?error= params, which carry keys (Supabase error codes for errors),
+// never text to display. Any unrecognised error code gets the generic line.
 const MSG: Record<string, string> = {
   "confirm-email": "Almost there — open the confirmation link we just emailed you and you'll be signed straight in.",
   "save-trip": "Log in to save this trip to your list.",
 };
 const ERRORS: Record<string, string> = {
-  credentials: "Incorrect email or password.",
-  generic: "Something went wrong — please try again.",
+  invalid_credentials: "Incorrect email or password.",
+  email_not_confirmed: "Confirm your email first — open the link we sent you, then log in.",
+  over_request_rate_limit: "Too many attempts. Wait a minute and try again.",
 };
+const GENERIC_ERROR = "Something went wrong — please try again.";
 
 export default async function LoginPage(props: {
   searchParams: Promise<{ error?: string; msg?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const message = searchParams.msg ? (MSG[searchParams.msg] ?? null) : null;
-  const error = searchParams.error ? (ERRORS[searchParams.error] ?? null) : null;
+  const error = searchParams.error ? (ERRORS[searchParams.error] ?? GENERIC_ERROR) : null;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
+      <ClearOfflineCache />
       <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">
         <ChevronLeftIcon className="h-5 w-5" />
         Back

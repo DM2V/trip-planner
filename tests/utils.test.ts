@@ -6,6 +6,7 @@ import {
   formatDuration,
   googleMapsDirectionsUrl,
   googleMapsPlaceUrl,
+  isValidCoordinate,
   parseDateOnly,
   recommendStopTime,
   validateTripDates,
@@ -71,6 +72,21 @@ describe("validateTripDates", () => {
   it("rejects an end date before the start date", () => {
     expect(validateTripDates("2026-09-10", "2026-09-05")).toBe("End date can't be before the start date");
     expect(validateTripDates("2027-01-01", "2026-12-31")).not.toBeNull();
+  });
+});
+
+describe("isValidCoordinate", () => {
+  it("accepts real-world coordinates, including the extremes", () => {
+    expect(isValidCoordinate(40.7484, -73.9857)).toBe(true);
+    expect(isValidCoordinate(-90, 180)).toBe(true);
+    expect(isValidCoordinate(0, 0)).toBe(true);
+  });
+
+  it("rejects anything the map can't draw", () => {
+    expect(isValidCoordinate(95.1, 10)).toBe(false);
+    expect(isValidCoordinate(10, -180.5)).toBe(false);
+    expect(isValidCoordinate(Number.NaN, 0)).toBe(false);
+    expect(isValidCoordinate(0, Number.POSITIVE_INFINITY)).toBe(false);
   });
 });
 

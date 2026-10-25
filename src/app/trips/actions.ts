@@ -12,8 +12,9 @@ import {
 } from "@/lib/ors/optimization";
 import type { LatLng } from "@/types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { allow } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
-import { validateTripDates } from "@/lib/utils";
+import { isValidCoordinate, validateTripDates } from "@/lib/utils";
 
 export async function createTrip(formData: FormData) {
   const supabase = await createClient();
@@ -28,6 +29,10 @@ export async function createTrip(formData: FormData) {
   const dateError = validateTripDates(startDate, endDate);
   if (dateError) redirect("/trips/new?error=invalid-dates");
 
+  const originLat = Number(formData.get("origin_lat"));
+  const originLng = Number(formData.get("origin_lng"));
+  if (!isValidCoordinate(originLat, originLng)) redirect("/trips/new?error=save-failed");
+
   const { data: trip, error } = await supabase
     .from("trips")
     .insert({
@@ -36,8 +41,8 @@ export async function createTrip(formData: FormData) {
       start_date: startDate,
       end_date: endDate,
       origin_label: formData.get("origin_label") as string,
-      origin_lat: Number(formData.get("origin_lat")),
-      origin_lng: Number(formData.get("origin_lng")),
+      origin_lat: originLat,
+      origin_lng: originLng,
     })
     .select()
     .single();
@@ -67,6 +72,7 @@ export async function updateTrip(tripId: string, formData: FormData) {
 
   const originLat = Number(formData.get("origin_lat"));
   const originLng = Number(formData.get("origin_lng"));
+  if (!isValidCoordinate(originLat, originLng)) redirect(`/trips/${tripId}/edit?error=save-failed`);
   // A changed origin invalidates any calculated route (every leg and the geometry itself were
   // computed from the old one) — same reasoning as clearing it when a stop is added or removed.
   const originChanged = originLat !== trip.origin_lat || originLng !== trip.origin_lng;
@@ -99,6 +105,8 @@ export async function addStop(
   tripId: string,
   place: { label: string; lat: number; lng: number },
 ) {
+  if (!isValidCoordinate(place.lat, place.lng)) throw new Error("Invalid coordinates");
+
   const supabase = await createClient();
 
   const { error } = await supabase.from("stops").insert({
@@ -342,9 +350,16 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
   const supabase = await createClient();
 
   // The stops query only depends on tripId, not on the trip row, so it runs concurrently with the
-  // trip fetch instead of waiting on it. If the trip turns out not to exist, the stops result is
-  // simply discarded below.
-  const [{ data: trip }, { data: stops }] = await Promise.all([
+  // trip fetch and the auth check instead of waiting on them. If the trip turns out not to exist,
+  // the stops result is simply discarded below.
+  const [
+    {
+      data: { user },
+    },
+    { data: trip },
+    { data: stops },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
     supabase.from("trips").select("*").eq("id", tripId).single(),
     supabase
       .from("stops")
@@ -353,7 +368,14 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
       .order("created_at", { ascending: true }),
   ]);
 
-  if (!trip) return { error: "Trip not found" };
+  // A viewer can read the trip but not save a route to it, so letting them calculate would only
+  // spend the shared OpenRouteService quota for nothing.
+  if (!user || !trip || trip.owner_id !== user.id) return { error: "Trip not found" };
+
+  // Each calculation spends two OpenRouteService calls (optimization, then walking directions).
+  if (!allow(`calculate-route:${user.id}`, 10, 60_000)) {
+    return { error: "Too many route calculations — wait a minute and try again." };
+  }
 
   if (!stops || stops.length === 0) {
     return { error: "Add at least one stop before calculating a route" };
@@ -361,13 +383,11 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
 
   const origin = { lat: trip.origin_lat, lng: trip.origin_lng };
 
-  let driving: Awaited<ReturnType<typeof getOptimizedRoute>> | null = null;
-
   try {
     // Driving picks the visiting order (it's the default view); walking then reuses that exact
     // order via a plain Directions call instead of re-optimizing, so the two profiles never
     // disagree on which stop comes next — only on how long each leg takes.
-    driving = await getOptimizedRoute(
+    const driving = await getOptimizedRoute(
       origin,
       stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
       "driving-car",
@@ -377,7 +397,7 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     // Only append the origin as a closing waypoint for a round trip — same choice driving's
     // start/end above just made — so ORS Directions' segments come back with one extra leg (the
     // return trip) for free when it applies, no separate call needed either way.
-    const orderedStops = driving!.order.map((stopIndex: number) => stops[stopIndex]);
+    const orderedStops = driving.order.map((stopIndex: number) => stops[stopIndex]);
     const walkingWaypoints = [
       origin,
       ...orderedStops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
@@ -407,6 +427,15 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     };
 
     await supabase.from("trips").update({ optimized_route: routes }).eq("id", tripId);
+
+    await Promise.all(
+      driving.order.map((stopIndex: number, visitPosition: number) =>
+        supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
+      ),
+    );
+
+    revalidatePath(`/trips/${tripId}`);
+    return {};
   } catch (err) {
     if (err instanceof UnroutableCoordinateError) {
       const place = describeUnreachablePoint({ lat: err.lat, lng: err.lng }, origin, stops);
@@ -419,19 +448,4 @@ export async function calculateRoute(tripId: string, roundTrip: boolean): Promis
     console.error("calculateRoute failed:", err);
     return { error: "Could not calculate the route. Please try again in a moment." };
   }
-
-  // Order index updates are best-effort and run after the route is already saved — a failure here
-  // only affects the visual ordering of stops in the list (the optimized_route already has the
-  // correct sequence). Running them outside the try block means a transient DB error won't report
-  // a fake "route failed" to the user when the route was in fact saved successfully.
-  if (driving) {
-    await Promise.all(
-      driving.order.map((stopIndex: number, visitPosition: number) =>
-        supabase.from("stops").update({ order_index: visitPosition }).eq("id", stops[stopIndex].id),
-      ),
-    );
-  }
-
-  revalidatePath(`/trips/${tripId}`);
-  return {};
 }

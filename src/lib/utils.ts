@@ -111,3 +111,9 @@ export function validateTripDates(startDate: string, endDate: string): string | 
   if (endDate < startDate) return "End date can't be before the start date";
   return null;
 }
+
+// MapLibre throws on a latitude outside ±90, which takes down the whole trip page (and its public
+// share view) for as long as that point is saved, so nothing out of range may be stored.
+export function isValidCoordinate(lat: number, lng: number): boolean {
+  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}

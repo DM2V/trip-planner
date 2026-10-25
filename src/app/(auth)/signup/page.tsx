@@ -6,22 +6,27 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import { signup } from "../actions";
 
-// Fixed messages keyed by ?msg= and ?error= query params. Never rendered from raw URL text.
+// Fixed text for the ?msg= and ?error= params, which carry keys (Supabase error codes for errors),
+// never text to display. Any unrecognised error code gets the generic line.
 const MSGS: Record<string, string> = {
   "copy-trip": "Create an account to get your own editable copy of this trip.",
 };
 const ERRORS: Record<string, string> = {
-  "email-taken": "An account with that email already exists.",
-  "weak-password": "Password must be at least 6 characters.",
-  generic: "Something went wrong — please try again.",
+  user_already_exists: "An account with that email already exists. Log in instead.",
+  email_exists: "An account with that email already exists. Log in instead.",
+  weak_password: "Password must be at least 6 characters.",
+  email_address_invalid: "That email address isn't valid.",
+  over_email_send_rate_limit: "We can't send more confirmation emails right now. Try again in a little while.",
+  over_request_rate_limit: "Too many attempts. Wait a minute and try again.",
 };
+const GENERIC_ERROR = "Something went wrong — please try again.";
 
 export default async function SignupPage(props: {
   searchParams: Promise<{ error?: string; msg?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const message = searchParams.msg ? (MSGS[searchParams.msg] ?? null) : null;
-  const error = searchParams.error ? (ERRORS[searchParams.error] ?? null) : null;
+  const error = searchParams.error ? (ERRORS[searchParams.error] ?? GENERIC_ERROR) : null;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
       <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rejectIfSignedOut } from "@/lib/apiAuth";
+import { guardApiRequest } from "@/lib/apiAuth";
 import { isGoogleMapsUrl } from "@/lib/googleMapsLink";
-import { allow } from "@/lib/rateLimit";
+import { isValidCoordinate } from "@/lib/utils";
 
 const MAX_REDIRECTS = 5;
 const REQUEST_TIMEOUT_MS = 8000;
@@ -39,7 +39,7 @@ function placeFromUrlOnly(rawUrl: string): { label: string; lat: number; lng: nu
 
   const lat = Number(coords[1]);
   const lng = Number(coords[2]);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (!isValidCoordinate(lat, lng)) return null;
 
   const nameMatch = PLACE_NAME_PATTERN.exec(url);
   const label = nameMatch ? nameMatch[1].replace(/\+/g, " ") : `${lat}, ${lng}`;
@@ -53,7 +53,7 @@ function placeFromPage(rawUrl: string, html: string): { label: string; lat: numb
 
   const lat = Number(coords[1]);
   const lng = Number(coords[2]);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (!isValidCoordinate(lat, lng)) return null;
 
   const nameMatch = PLACE_NAME_PATTERN.exec(url);
   const label = nameMatch ? nameMatch[1].replace(/\+/g, " ") : `${lat}, ${lng}`;
@@ -89,7 +89,7 @@ async function placeFromAddressLookup(
     if (!feature) return null;
 
     const [lng, lat] = feature.geometry.coordinates;
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (!isValidCoordinate(lat, lng)) return null;
 
     return { label: feature.properties.label ?? address, lat, lng };
   } catch {
@@ -131,14 +131,9 @@ async function fetchFollowingAllowedRedirects(startUrl: string): Promise<Respons
 // Lets a stop be added from a pasted Google Maps link instead of our own (OpenStreetMap-based)
 // search, for the places that search can't find at all.
 export async function GET(request: NextRequest) {
-  const signedOut = await rejectIfSignedOut();
-  if (signedOut) return signedOut;
-
-  // 20 link-parses per minute per IP; each may fetch an external page + geocode.
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!allow(`parse-maps-link:${ip}`, 20, 60_000)) {
-    return NextResponse.json({ error: "Too many requests — slow down a moment" }, { status: 429 });
-  }
+  // Lower than search: each call can fetch Google's page and then geocode on top of that.
+  const rejected = await guardApiRequest("parse-maps-link", 20);
+  if (rejected) return rejected;
 
   const link = request.nextUrl.searchParams.get("url");
 

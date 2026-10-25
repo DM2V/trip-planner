@@ -12,11 +12,9 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   });
 
-  if (error) {
-    // Use a fixed key, not the raw Supabase message, so the URL can't be crafted to show arbitrary text.
-    const key = error.message.toLowerCase().includes("invalid") ? "credentials" : "generic";
-    redirect(`/login?error=${key}`);
-  }
+  // Only Supabase's error code travels in the URL; the page turns it into fixed text, so a
+  // crafted link can't put words of its own on the login screen.
+  if (error) redirect(`/login?error=${error.code ?? "unexpected"}`);
 
   redirect(await resolvePostLoginRedirect());
 }
@@ -29,15 +27,7 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   });
 
-  if (error) {
-    const msg = error.message.toLowerCase();
-    const key = msg.includes("already") || msg.includes("registered")
-      ? "email-taken"
-      : msg.includes("password")
-      ? "weak-password"
-      : "generic";
-    redirect(`/signup?error=${key}`);
-  }
+  if (error) redirect(`/signup?error=${error.code ?? "unexpected"}`);
 
   // The confirmation link signs them in on arrival (see app/auth/callback).
   redirect("/login?msg=confirm-email");

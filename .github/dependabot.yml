@@ -31,6 +31,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: eslint
         update-types: ["version-update:semver-major"]
+      # Tracks the Node version the code runs on (CI uses 22), not the newest Node. Types for a
+      # newer major would accept APIs that then fail at runtime.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
       # Pre-1.0, so a minor bump can be breaking. This one owns the session cookies, where a
       # silent change already cost a login outage once; patches only.
       - dependency-name: "@supabase/ssr"

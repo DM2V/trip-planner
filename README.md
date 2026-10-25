@@ -108,8 +108,13 @@ Worth reading before you deploy your own, or if you're auditing this one.
 - **A share link is a bearer secret.** Anyone holding it can view that trip. It carries a random
   UUID that is not guessable, and the owner can rotate it from the trip's edit screen, which also
   removes everyone who had saved the trip.
-- **The search and link-parsing endpoints require a session**, because they spend a shared
-  third-party quota. The link parser also only follows redirects between Google-owned hosts.
+- **Everything that spends the shared OpenRouteService quota requires a session and is
+  rate-limited per user**: place search, link parsing and route calculation. The limits live in
+  each server instance's memory, so they stop one caller hammering an endpoint rather than enforce
+  a global quota. The link parser also only follows redirects between Google-owned hosts.
+- **The offline cache is cleared at sign-out.** The service worker keeps visited pages so a trip
+  still opens without signal; the login page wipes that cache, which covers logging out, deleting
+  the account and an expired session.
 - **A Content Security Policy and the usual security headers** are set in
   [`next.config.js`](next.config.js). Scripts still allow `'unsafe-inline'` (Next.js bootstrap
   scripts); the policy's value is in restricting framing, plugins and where requests may go.

@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rejectIfSignedOut } from "@/lib/apiAuth";
-import { allow } from "@/lib/rateLimit";
+import { guardApiRequest } from "@/lib/apiAuth";
 
 const ORS_API_KEY = process.env.ORS_API_KEY;
 
 // Phase 2: proxies to the OpenRouteService Geocoding (autocomplete) endpoint — same API key as
 // the optimization route, one less account to manage.
 export async function GET(request: NextRequest) {
-  const signedOut = await rejectIfSignedOut();
-  if (signedOut) return signedOut;
-
-  // 120 searches per minute per IP; the ORS free tier has a per-key cap this guards against.
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!allow(`places-search:${ip}`, 120, 60_000)) {
-    return NextResponse.json({ error: "Too many requests — slow down a moment" }, { status: 429 });
-  }
+  // The search box debounces keystrokes, so even slow, steady typing stays well under this.
+  const rejected = await guardApiRequest("places-search", 60);
+  if (rejected) return rejected;
 
   const query = request.nextUrl.searchParams.get("q");
 

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // The real check reads the Supabase session cookie; here it's just a switch.
-const rejectIfSignedOut = vi.fn();
-vi.mock("@/lib/apiAuth", () => ({ rejectIfSignedOut: () => rejectIfSignedOut() }));
+const guardApiRequest = vi.fn();
+vi.mock("@/lib/apiAuth", () => ({ guardApiRequest: () => guardApiRequest() }));
 
 import { GET } from "@/app/api/parse-maps-link/route";
 
@@ -43,12 +43,12 @@ function stubFetch(...responses: Response[]) {
 }
 
 beforeEach(() => {
-  rejectIfSignedOut.mockReturnValue(SIGNED_IN);
+  guardApiRequest.mockReturnValue(SIGNED_IN);
 });
 
 describe("access control", () => {
   it("refuses a signed-out caller before doing any work, so the endpoint can't be used to burn quota", async () => {
-    rejectIfSignedOut.mockReturnValue(SIGNED_OUT());
+    guardApiRequest.mockReturnValue(SIGNED_OUT());
     const fetchMock = stubFetch();
 
     const response = await GET(request("https://maps.app.goo.gl/abc"));
@@ -125,6 +125,14 @@ describe("resolving a link", () => {
     stubFetch(reply("https://www.google.com/maps", { html: "<html></html>" }));
 
     const response = await GET(request("https://www.google.com/maps"));
+
+    expect(response.status).toBe(422);
+  });
+
+  it("never returns a point the map can't draw, even if the link spells one out", async () => {
+    stubFetch(reply("https://www.google.com/maps/@95.5,10.2,15z", { html: "<html></html>" }));
+
+    const response = await GET(request("https://www.google.com/maps/@95.5,10.2,15z"));
 
     expect(response.status).toBe(422);
   });
