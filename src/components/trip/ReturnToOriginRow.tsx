@@ -29,7 +29,7 @@ export function ReturnToOriginRow({ originLabel, originLat, originLng, stops }: 
         type="button"
         onClick={() => setMapsSheetOpen(true)}
         aria-label={`Back to ${originLabel}, open directions in Google Maps`}
-        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
+        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-(--color-fill-secondary)"
       >
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black text-white">
           <LocationIcon className="h-3.5 w-3.5" />

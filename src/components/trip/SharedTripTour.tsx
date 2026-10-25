@@ -139,7 +139,7 @@ export function SharedTripTour({ hasRoute }: { hasRoute: boolean }) {
   const cardBelow = spaceBelow >= MIN_SPACE_BELOW;
 
   return (
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Shared trip tour">
+    <div className="fixed inset-0 z-60" role="dialog" aria-modal="true" aria-label="Shared trip tour">
       {/* Swallows taps on the page underneath so the tour can't be half-navigated away from. */}
       <div className="absolute inset-0" onClick={() => (isLast ? finish() : setIndex(index + 1))} />
 
@@ -171,27 +171,27 @@ export function SharedTripTour({ hasRoute }: { hasRoute: boolean }) {
               <span
                 key={dot}
                 className={`h-1.5 rounded-full transition-all ${
-                  dot === index ? "w-4 bg-[var(--color-accent)]" : "w-1.5 bg-[var(--color-fill-secondary)]"
+                  dot === index ? "w-4 bg-(--color-accent)" : "w-1.5 bg-(--color-fill-secondary)"
                 }`}
               />
             ))}
           </div>
 
           <p className="mt-3 text-[1.0625rem] font-semibold">{step.title}</p>
-          <p className="mt-1 text-[0.9375rem] leading-snug text-[var(--color-label-secondary)]">{step.body}</p>
+          <p className="mt-1 text-[0.9375rem] leading-snug text-(--color-label-secondary)">{step.body}</p>
 
           <div className="mt-4 flex items-center justify-between">
             <button
               type="button"
               onClick={finish}
-              className="min-h-[44px] px-1 text-[0.9375rem] text-[var(--color-label-secondary)]"
+              className="min-h-[44px] px-1 text-[0.9375rem] text-(--color-label-secondary)"
             >
               Skip
             </button>
             <button
               type="button"
               onClick={() => (isLast ? finish() : setIndex(index + 1))}
-              className="min-h-[44px] rounded-full bg-[var(--color-accent)] px-5 text-[0.9375rem] font-semibold text-white"
+              className="min-h-[44px] rounded-full bg-(--color-accent) px-5 text-[0.9375rem] font-semibold text-white"
             >
               {isLast ? "Got it" : "Next"}
             </button>

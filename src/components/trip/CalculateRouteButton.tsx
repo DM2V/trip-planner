@@ -14,7 +14,7 @@ function CalculatingOverlay() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="status" aria-live="polite">
       <div className="sheet-material flex flex-col items-center gap-3 rounded-2xl px-8 py-6 shadow-lg">
-        <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-current border-t-transparent text-[var(--color-accent)]" />
+        <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-current border-t-transparent text-(--color-accent)" />
         <p className="text-[0.9375rem] font-medium">Calculating route...</p>
       </div>
     </div>
@@ -63,7 +63,7 @@ export function CalculateRouteButton({
       >
         {isPending ? "Calculating..." : "Calculate Optimal Route"}
       </Button>
-      {error && <p className="text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+      {error && <p className="text-[0.8125rem] text-(--color-destructive)">{error}</p>}
 
       {sheetOpen && <RouteTypeSheet onSelect={runCalculation} onClose={() => setSheetOpen(false)} />}
     </div>

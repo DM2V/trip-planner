@@ -18,7 +18,7 @@ import type { OptimizedRoutes } from "@/lib/ors/optimization";
 function InvalidLink() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <p className="text-[1.0625rem] text-[var(--color-label-secondary)]">
+      <p className="text-[1.0625rem] text-(--color-label-secondary)">
         This share link is invalid or has expired.
       </p>
     </main>
@@ -92,14 +92,14 @@ export default async function SharedTripPage(props: {
         </div>
 
         <header className="nav-material flex h-11 items-center px-4">
-          <a href={user ? "/trips" : "/"} className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">
+          <a href={user ? "/trips" : "/"} className="text-[1.0625rem] font-semibold text-(--color-accent)">
             Trip Planner
           </a>
         </header>
 
         <div className="flex flex-1 flex-col gap-6 px-4 pb-10 pt-4">
           <div data-tour="summary">
-            <p className="text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
+            <p className="text-[0.8125rem] font-medium uppercase tracking-wide text-(--color-label-secondary)">
               Shared trip
             </p>
             <h1 className="text-[1.75rem] font-bold tracking-tight">{trip.name}</h1>
@@ -133,7 +133,7 @@ export default async function SharedTripPage(props: {
               <form action={copySharedTripNow.bind(null, trip.id, trip.share_token)}>
                 <button
                   type="submit"
-                  className="w-full text-center text-[0.9375rem] font-medium text-[var(--color-accent)]"
+                  className="w-full text-center text-[0.9375rem] font-medium text-(--color-accent)"
                 >
                   Or make your own editable copy
                 </button>
@@ -146,14 +146,14 @@ export default async function SharedTripPage(props: {
                   Edit Your Own Copy
                 </Button>
               </form>
-              <p className="text-center text-[0.8125rem] text-[var(--color-label-secondary)]">
+              <p className="text-center text-[0.8125rem] text-(--color-label-secondary)">
                 Creates your own copy of this trip to edit freely — the original stays unchanged.
               </p>
-              <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">
+              <p className="text-center text-[0.9375rem] text-(--color-label-secondary)">
                 Already have an account?{" "}
                 <a
                   href="/login?msg=save-trip"
-                  className="font-medium text-[var(--color-accent)]"
+                  className="font-medium text-(--color-accent)"
                 >
                   Log in
                 </a>

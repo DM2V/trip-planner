@@ -61,11 +61,11 @@ export function ShareTripButton({
         className={
           variant === "full"
             ? buttonClassName("secondary", "w-full")
-            : "flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+            : "flex h-11 w-11 shrink-0 items-center justify-center text-(--color-accent) active:opacity-50"
         }
       >
         {copied ? (
-          <CheckIcon className="h-5 w-5 text-[var(--color-success)]" />
+          <CheckIcon className="h-5 w-5 text-(--color-success)" />
         ) : (
           <ShareIcon className="h-5 w-5" />
         )}
@@ -73,7 +73,7 @@ export function ShareTripButton({
       </button>
 
       {variant === "full" && !copied && !error && (
-        <p className="mt-2 text-center text-[0.8125rem] text-[var(--color-label-secondary)]">
+        <p className="mt-2 text-center text-[0.8125rem] text-(--color-label-secondary)">
           Anyone with the link can open it — no account needed.
         </p>
       )}

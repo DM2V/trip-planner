@@ -4,7 +4,7 @@
 export function AppMark({ className = "h-20 w-20" }: { className?: string }) {
   return (
     <div
-      className={`${className} flex items-center justify-center rounded-[26%] bg-[var(--color-accent)] shadow-sm`}
+      className={`${className} flex items-center justify-center rounded-[26%] bg-(--color-accent) shadow-xs`}
     >
       <svg viewBox="0 0 48 48" fill="none" className="h-[64%] w-[64%]" aria-hidden="true">
         {/* Held back from full white so the stops read as the foreground, not the line. */}

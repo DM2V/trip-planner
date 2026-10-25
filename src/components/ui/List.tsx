@@ -10,8 +10,8 @@ interface ListSectionProps {
 export function ListSection({ children, footer }: ListSectionProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="ios-list overflow-hidden rounded-2xl bg-[var(--color-bg-elevated)]">{children}</div>
-      {footer && <p className="px-4 text-[0.8125rem] text-[var(--color-label-secondary)]">{footer}</p>}
+      <div className="ios-list overflow-hidden rounded-2xl bg-(--color-bg-elevated)">{children}</div>
+      {footer && <p className="px-4 text-[0.8125rem] text-(--color-label-secondary)">{footer}</p>}
     </div>
   );
 }

@@ -7,10 +7,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-[var(--color-accent)] text-white active:opacity-70",
-  secondary: "bg-[var(--color-fill-secondary)] text-[var(--color-accent)] active:opacity-60",
-  plain: "text-[var(--color-accent)] active:opacity-50",
-  destructive: "text-[var(--color-destructive)] active:opacity-50",
+  primary: "bg-(--color-accent) text-white active:opacity-70",
+  secondary: "bg-(--color-fill-secondary) text-(--color-accent) active:opacity-60",
+  plain: "text-(--color-accent) active:opacity-50",
+  destructive: "text-(--color-destructive) active:opacity-50",
 };
 
 // Shared with plain <Link> elements that need to look like a button (buttons can't nest inside

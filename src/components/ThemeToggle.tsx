@@ -97,19 +97,19 @@ export function ThemeToggle() {
           >
             <div
               className={`relative h-14 w-full overflow-hidden rounded-xl border-2 transition-colors ${
-                selected ? "border-[var(--color-accent)]" : "border-transparent"
+                selected ? "border-(--color-accent)" : "border-transparent"
               }`}
             >
               <ThemePreviewSwatch variant={option.value} />
               {selected && (
-                <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-accent)] text-white">
+                <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-(--color-accent) text-white">
                   <CheckIcon className="h-2.5 w-2.5" />
                 </span>
               )}
             </div>
             <span
               className={`text-[0.8125rem] font-medium ${
-                selected ? "text-[var(--color-label)]" : "text-[var(--color-label-secondary)]"
+                selected ? "text-(--color-label)" : "text-(--color-label-secondary)"
               }`}
             >
               {option.label}

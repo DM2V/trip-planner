@@ -24,12 +24,12 @@ export function ResetShareLinkButton({ tripId }: { tripId: string }) {
             setDone(false);
             setConfirmOpen(true);
           }}
-          className="flex min-h-[52px] w-full items-center justify-center text-[1.0625rem] font-medium text-[var(--color-destructive)] active:bg-[var(--color-fill-secondary)] disabled:opacity-50"
+          className="flex min-h-[52px] w-full items-center justify-center text-[1.0625rem] font-medium text-(--color-destructive) active:bg-(--color-fill-secondary) disabled:opacity-50"
         >
           {isPending ? "Resetting..." : "Reset Share Link"}
         </button>
       </ListSection>
-      {error && <p className="px-4 pt-2 text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+      {error && <p className="px-4 pt-2 text-[0.8125rem] text-(--color-destructive)">{error}</p>}
 
       {confirmOpen && (
         <ConfirmDeleteSheet

@@ -20,7 +20,7 @@ interface StopListProps {
 export function StopList({ tripId, stops, originLabel, originLat, originLng }: StopListProps) {
   if (stops.length === 0) {
     return (
-      <p className="px-1 text-[0.9375rem] text-[var(--color-label-secondary)]">
+      <p className="px-1 text-[0.9375rem] text-(--color-label-secondary)">
         No stops yet — search above to add one.
       </p>
     );

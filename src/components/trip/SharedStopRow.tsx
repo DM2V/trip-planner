@@ -26,9 +26,9 @@ export function SharedStopRow({ stop, position }: { stop: Stop; position: number
         type="button"
         onClick={() => setMapsSheetOpen(true)}
         aria-label={`${stop.name}, open directions in Google Maps${leg ? `, ${formatDistance(leg.distanceMeters)} from the previous stop` : ""}`}
-        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
+        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-(--color-fill-secondary)"
       >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.8125rem] font-semibold text-white">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--color-accent) text-[0.8125rem] font-semibold text-white">
           {hasRoute ? position : ""}
         </span>
         <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>

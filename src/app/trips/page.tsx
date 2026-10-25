@@ -35,7 +35,7 @@ export default async function TripsPage() {
         trailing={
           <Link
             href="/trips/new"
-            className="chrome-pill flex min-h-[44px] shrink-0 items-center gap-1 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-[var(--color-accent)]"
+            className="chrome-pill flex min-h-[44px] shrink-0 items-center gap-1 rounded-full py-2 pl-3 pr-4 text-[1.0625rem] text-(--color-accent)"
           >
             <PlusIcon className="h-5 w-5" />
             New Trip
@@ -51,7 +51,7 @@ export default async function TripsPage() {
             ))}
           </ListSection>
         ) : (
-          <p className="px-1 text-[0.9375rem] text-[var(--color-label-secondary)]">
+          <p className="px-1 text-[0.9375rem] text-(--color-label-secondary)">
             No trips yet — tap + to create your first one.
           </p>
         )}

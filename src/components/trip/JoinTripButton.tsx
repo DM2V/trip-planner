@@ -10,7 +10,7 @@ export function JoinTripButton({ tripId, token }: { tripId: string; token: strin
   const [error, setError] = useState<string | null>(null);
 
   if (joined) {
-    return <p className="text-[0.9375rem] text-[var(--color-success)]">Saved to your trips.</p>;
+    return <p className="text-[0.9375rem] text-(--color-success)">Saved to your trips.</p>;
   }
 
   return (
@@ -33,7 +33,7 @@ export function JoinTripButton({ tripId, token }: { tripId: string; token: strin
       >
         {isPending ? "Saving..." : "Save to My Trips"}
       </Button>
-      {error && <p className="text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+      {error && <p className="text-[0.8125rem] text-(--color-destructive)">{error}</p>}
     </div>
   );
 }

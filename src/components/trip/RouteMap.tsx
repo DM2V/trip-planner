@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { type MapMarker } from "@/components/map/MapView";
 import { useRouteProfile } from "./RouteProfileContext";
 
-const MapSkeleton = () => <div className="h-full w-full animate-pulse bg-[var(--color-fill-secondary)]" />;
+const MapSkeleton = () => <div className="h-full w-full animate-pulse bg-(--color-fill-secondary)" />;
 
 // maplibre-gl is the bulk of this route's client bundle. Loading it as its own chunk (instead of
 // bundled with the rest of the page's client JS) lets the rest of the page hydrate/become

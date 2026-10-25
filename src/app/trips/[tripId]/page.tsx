@@ -86,7 +86,7 @@ export default async function TripDetailPage(props: {
                 <Link
                   href={`/trips/${trip.id}/edit`}
                   aria-label="Edit trip"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--color-accent)] active:opacity-50"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center text-(--color-accent) active:opacity-50"
                 >
                   <EditIcon className="h-5 w-5" />
                 </Link>

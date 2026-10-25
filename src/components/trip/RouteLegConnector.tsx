@@ -16,7 +16,7 @@ export function RouteLegConnector({ position }: { position: number }) {
   const Icon = profile === "foot-walking" ? WalkIcon : CarIcon;
 
   return (
-    <div className="flex min-h-[32px] items-center gap-2 px-4 py-1 text-[0.75rem] text-[var(--color-label-secondary)]">
+    <div className="flex min-h-[32px] items-center gap-2 px-4 py-1 text-[0.75rem] text-(--color-label-secondary)">
       <Icon className="h-3.5 w-3.5 shrink-0" />
       <span>
         {formatDistance(leg.distanceMeters)} · {formatDuration(leg.durationSeconds)}

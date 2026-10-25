@@ -15,11 +15,11 @@ export function DeleteAccountButton() {
         type="button"
         disabled={isPending}
         onClick={() => setConfirmOpen(true)}
-        className="flex min-h-[52px] w-full items-center justify-center text-[1.0625rem] font-medium text-[var(--color-destructive)] active:bg-[var(--color-fill-secondary)] disabled:opacity-50"
+        className="flex min-h-[52px] w-full items-center justify-center text-[1.0625rem] font-medium text-(--color-destructive) active:bg-(--color-fill-secondary) disabled:opacity-50"
       >
         {isPending ? "Deleting Account..." : "Delete Account"}
       </button>
-      {error && <p className="px-4 pb-3 text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+      {error && <p className="px-4 pb-3 text-[0.8125rem] text-(--color-destructive)">{error}</p>}
 
       {confirmOpen && (
         <ConfirmDeleteSheet

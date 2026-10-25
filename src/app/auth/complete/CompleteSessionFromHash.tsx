@@ -86,10 +86,10 @@ export function CompleteSessionFromHash() {
   if (failed) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-[1.0625rem] text-[var(--color-label-secondary)]">
+        <p className="text-[1.0625rem] text-(--color-label-secondary)">
           This sign-in link has expired or has already been used.
         </p>
-        <a href="/login" className="text-[1.0625rem] font-semibold text-[var(--color-accent)]">
+        <a href="/login" className="text-[1.0625rem] font-semibold text-(--color-accent)">
           Go to log in
         </a>
       </main>
@@ -99,7 +99,7 @@ export function CompleteSessionFromHash() {
   if (!pending) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-(--color-accent) border-t-transparent" />
       </main>
     );
   }
@@ -108,11 +108,11 @@ export function CompleteSessionFromHash() {
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 text-center">
       <div className="flex max-w-xs flex-col gap-2">
         <h1 className="text-[1.5rem] font-bold tracking-tight">Finish signing in</h1>
-        <p className="text-[1.0625rem] text-[var(--color-label-secondary)]">
+        <p className="text-[1.0625rem] text-(--color-label-secondary)">
           {pending.email ? (
             <>
               You&rsquo;re about to sign in as{" "}
-              <span className="break-all font-medium text-[var(--color-label)]">{pending.email}</span>.
+              <span className="break-all font-medium text-(--color-label)">{pending.email}</span>.
             </>
           ) : (
             "You're about to sign in to your account."
@@ -125,14 +125,14 @@ export function CompleteSessionFromHash() {
           type="button"
           onClick={confirm}
           disabled={working}
-          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl bg-[var(--color-accent)] px-4 text-[1.0625rem] font-semibold text-white transition-opacity active:opacity-70 disabled:opacity-35"
+          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl bg-(--color-accent) px-4 text-[1.0625rem] font-semibold text-white transition-opacity active:opacity-70 disabled:opacity-35"
         >
           {working ? "Signing in..." : "Continue"}
         </button>
-        <a href="/login" className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+        <a href="/login" className="text-[0.9375rem] text-(--color-label-secondary)">
           That&rsquo;s not me
         </a>
-        <p className="text-[0.8125rem] text-[var(--color-label-secondary)]">
+        <p className="text-[0.8125rem] text-(--color-label-secondary)">
           If you didn&rsquo;t expect this, don&rsquo;t continue &mdash; someone may have sent you a link to
           their account.
         </p>

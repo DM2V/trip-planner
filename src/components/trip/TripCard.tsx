@@ -43,10 +43,10 @@ export function TripCard({ trip }: { trip: Trip }) {
   if (undoVisible) {
     return (
       <div className="flex min-h-[60px] items-center justify-between px-4 py-3">
-        <span className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+        <span className="text-[0.9375rem] text-(--color-label-secondary)">
           Removed &ldquo;{trip.name}&rdquo;
         </span>
-        <button type="button" onClick={undo} className="text-[0.9375rem] font-medium text-[var(--color-accent)]">
+        <button type="button" onClick={undo} className="text-[0.9375rem] font-medium text-(--color-accent)">
           Undo
         </button>
       </div>
@@ -57,24 +57,24 @@ export function TripCard({ trip }: { trip: Trip }) {
 
   return (
     <>
-      <div className="flex min-h-[60px] items-center bg-[var(--color-bg-elevated)]">
+      <div className="flex min-h-[60px] items-center bg-(--color-bg-elevated)">
         <Link
           href={`/trips/${trip.id}`}
-          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 active:bg-[var(--color-fill-secondary)]"
+          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 active:bg-(--color-fill-secondary)"
         >
           <div className="min-w-0 flex-1">
             <p className="truncate text-[1.0625rem] font-medium">{trip.name}</p>
-            <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+            <p className="text-[0.9375rem] text-(--color-label-secondary)">
               {formatDateRange(trip.start_date, trip.end_date)}
             </p>
           </div>
-          <ChevronRightIcon className="h-4 w-4 shrink-0 text-[var(--color-label-tertiary)]" />
+          <ChevronRightIcon className="h-4 w-4 shrink-0 text-(--color-label-tertiary)" />
         </Link>
         <button
           type="button"
           onClick={() => setConfirmOpen(true)}
           aria-label={`Delete ${trip.name}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center pr-4 text-[var(--color-destructive)] active:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center pr-4 text-(--color-destructive) active:opacity-50"
         >
           <TrashIcon className="h-5 w-5" />
         </button>

@@ -34,7 +34,7 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
       {availableOptions.length > 1 ? (
-        <div className="flex gap-1 rounded-full bg-[var(--color-fill-secondary)] p-0.5" role="tablist">
+        <div className="flex gap-1 rounded-full bg-(--color-fill-secondary) p-0.5" role="tablist">
           {availableOptions.map((option) => (
             <button
               key={option.profile}
@@ -44,8 +44,8 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
               onClick={() => setProfile(option.profile)}
               className={`rounded-full px-2.5 py-1 text-[0.75rem] font-medium transition-colors ${
                 profile === option.profile
-                  ? "bg-[var(--color-bg-elevated)] text-[var(--color-label)] shadow-sm"
-                  : "text-[var(--color-label-secondary)]"
+                  ? "bg-(--color-bg-elevated) text-(--color-label) shadow-xs"
+                  : "text-(--color-label-secondary)"
               }`}
             >
               {option.label}
@@ -53,7 +53,7 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
           ))}
         </div>
       ) : (
-        <span className="rounded-full bg-[var(--color-fill-secondary)] px-2.5 py-1 text-[0.75rem] font-medium text-[var(--color-label-secondary)]">
+        <span className="rounded-full bg-(--color-fill-secondary) px-2.5 py-1 text-[0.75rem] font-medium text-(--color-label-secondary)">
           {availableOptions[0].label}
         </span>
       )}
@@ -65,7 +65,7 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
       )}
 
       {route && (
-        <p className="w-full text-[0.75rem] leading-snug text-[var(--color-label-secondary)]">
+        <p className="w-full text-[0.75rem] leading-snug text-(--color-label-secondary)">
           Stops are ordered to minimize total {profile === "foot-walking" ? "walking" : "driving"} distance between
           them — calculated from real routes, not a straight line — so you spend less time getting around and more
           time exploring.
@@ -78,14 +78,14 @@ export function RouteSummary({ startDate, endDate, stopCount }: RouteSummaryProp
       {recommendation && (
         <p
           className={`w-full rounded-xl px-3 py-2 text-[0.8125rem] leading-snug ${
-            recommendation.feasible ? "bg-[var(--color-fill-secondary)] text-[var(--color-label-secondary)]" : "tinted-error"
+            recommendation.feasible ? "bg-(--color-fill-secondary) text-(--color-label-secondary)" : "tinted-error"
           }`}
         >
           {recommendation.feasible ? (
             <>
               Assuming ~{ASSUMED_TOURING_HOURS_PER_DAY}h of sightseeing a day, your {recommendation.days}-day trip
               leaves about{" "}
-              <span className="font-medium text-[var(--color-label)]">
+              <span className="font-medium text-(--color-label)">
                 {formatDuration(recommendation.minutesPerStop * 60)}
               </span>{" "}
               per stop after travel time.

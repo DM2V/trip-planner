@@ -29,7 +29,7 @@ export default async function SignupPage(props: {
   const error = searchParams.error ? (ERRORS[searchParams.error] ?? GENERIC_ERROR) : null;
   return (
     <main className="flex min-h-dvh flex-col justify-center gap-6 px-4 py-10">
-      <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-[var(--color-accent)]">
+      <Link href="/" className="-ml-2 flex w-fit items-center gap-0.5 text-[1.0625rem] text-(--color-accent)">
         <ChevronLeftIcon className="h-5 w-5" />
         Back
       </Link>
@@ -45,10 +45,10 @@ export default async function SignupPage(props: {
 
       <GoogleLoginButton />
 
-      <div className="flex items-center gap-3 text-[0.8125rem] text-[var(--color-label-tertiary)]">
-        <div className="h-px flex-1 bg-[var(--color-separator)]" />
+      <div className="flex items-center gap-3 text-[0.8125rem] text-(--color-label-tertiary)">
+        <div className="h-px flex-1 bg-(--color-separator)" />
         or
-        <div className="h-px flex-1 bg-[var(--color-separator)]" />
+        <div className="h-px flex-1 bg-(--color-separator)" />
       </div>
 
       <form action={signup} className="flex flex-col gap-4">
@@ -60,7 +60,7 @@ export default async function SignupPage(props: {
               type="email"
               required
               placeholder="you@email.com"
-              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden placeholder:text-(--color-label-tertiary)"
             />
           </FormRow>
           <FormRow label="Password" htmlFor="password">
@@ -71,7 +71,7 @@ export default async function SignupPage(props: {
               required
               minLength={6}
               placeholder="••••••••"
-              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden placeholder:text-(--color-label-tertiary)"
             />
           </FormRow>
         </ListSection>
@@ -79,9 +79,9 @@ export default async function SignupPage(props: {
         <SubmitButton pendingLabel="Signing up...">Sign Up</SubmitButton>
       </form>
 
-      <p className="text-center text-[0.9375rem] text-[var(--color-label-secondary)]">
+      <p className="text-center text-[0.9375rem] text-(--color-label-secondary)">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-[var(--color-accent)]">
+        <Link href="/login" className="font-medium text-(--color-accent)">
           Log in
         </Link>
       </p>

@@ -49,7 +49,7 @@ export function ActionSheet({ header, children, onClose }: ActionSheetProps) {
         <button
           type="button"
           onClick={onClose}
-          className="sheet-material mt-2 block min-h-[52px] w-full rounded-2xl text-[1.0625rem] font-semibold text-[var(--color-accent)] shadow-lg active:bg-[var(--color-fill-secondary)]"
+          className="sheet-material mt-2 block min-h-[52px] w-full rounded-2xl text-[1.0625rem] font-semibold text-(--color-accent) shadow-lg active:bg-(--color-fill-secondary)"
         >
           Cancel
         </button>
@@ -69,8 +69,8 @@ export function ActionSheetButton({ tone = "accent", onClick, children }: Action
     <button
       type="button"
       onClick={onClick}
-      className={`block min-h-[52px] w-full text-[1.0625rem] font-medium active:bg-[var(--color-fill-secondary)] ${
-        tone === "destructive" ? "text-[var(--color-destructive)]" : "text-[var(--color-accent)]"
+      className={`block min-h-[52px] w-full text-[1.0625rem] font-medium active:bg-(--color-fill-secondary) ${
+        tone === "destructive" ? "text-(--color-destructive)" : "text-(--color-accent)"
       }`}
     >
       {children}

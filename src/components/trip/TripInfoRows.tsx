@@ -13,11 +13,11 @@ interface TripInfoRowsProps {
 export function TripInfoRows({ startDate, endDate, originLabel }: TripInfoRowsProps) {
   return (
     <div className="mt-1 flex flex-col gap-1">
-      <div className="flex items-center gap-1.5 text-[0.9375rem] text-[var(--color-label-secondary)]">
+      <div className="flex items-center gap-1.5 text-[0.9375rem] text-(--color-label-secondary)">
         <CalendarIcon className="h-4 w-4 shrink-0" />
         <span>{formatDateRange(startDate, endDate)}</span>
       </div>
-      <div className="flex items-start gap-1.5 text-[0.9375rem] text-[var(--color-label-secondary)]">
+      <div className="flex items-start gap-1.5 text-[0.9375rem] text-(--color-label-secondary)">
         <LocationIcon className="mt-0.5 h-4 w-4 shrink-0" />
         <span>{originLabel}</span>
       </div>

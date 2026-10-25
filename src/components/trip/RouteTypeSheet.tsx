@@ -17,7 +17,7 @@ export function RouteTypeSheet({ onSelect, onClose }: RouteTypeSheetProps) {
       header={
         <>
           <p className="truncate text-[0.9375rem] font-medium">Return to your starting point?</p>
-          <p className="mt-0.5 text-[0.8125rem] text-[var(--color-label-secondary)]">
+          <p className="mt-0.5 text-[0.8125rem] text-(--color-label-secondary)">
             Choose whether the route should end back where you started, or just at the last stop.
           </p>
         </>

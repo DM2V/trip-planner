@@ -26,7 +26,7 @@ export default function ErrorPage({
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 text-center">
       <div className="flex max-w-xs flex-col gap-2">
         <h1 className="text-[1.5rem] font-bold tracking-tight">Something went wrong</h1>
-        <p className="text-[1.0625rem] text-[var(--color-label-secondary)]">
+        <p className="text-[1.0625rem] text-(--color-label-secondary)">
           We couldn&rsquo;t load this page. Your trips are safe &mdash; try again, or head back to your list.
         </p>
       </div>
@@ -41,7 +41,7 @@ export default function ErrorPage({
       </div>
 
       {error.digest && (
-        <p className="text-[0.75rem] text-[var(--color-label-secondary)]">Reference: {error.digest}</p>
+        <p className="text-[0.75rem] text-(--color-label-secondary)">Reference: {error.digest}</p>
       )}
     </main>
   );

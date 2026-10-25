@@ -22,7 +22,7 @@ export function PageHeader({ title, backHref, backLabel = "Back", large = false,
           {backHref && (
             <Link
               href={backHref}
-              className="-ml-2 flex min-h-[44px] items-center gap-0.5 px-2 text-[1.0625rem] text-[var(--color-accent)]"
+              className="-ml-2 flex min-h-[44px] items-center gap-0.5 px-2 text-[1.0625rem] text-(--color-accent)"
             >
               <ChevronLeftIcon className="h-5 w-5" />
               {backLabel}

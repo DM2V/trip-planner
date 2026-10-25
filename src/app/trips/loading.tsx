@@ -13,7 +13,7 @@ export default function TripsLoading() {
         title="Trips"
         large
         trailing={
-          <span className="h-6 w-6 shrink-0 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
+          <span className="h-6 w-6 shrink-0 animate-spin rounded-full border-2 border-(--color-accent) border-t-transparent" />
         }
       />
 
@@ -22,8 +22,8 @@ export default function TripsLoading() {
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex min-h-[60px] items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1 space-y-2">
-                <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--color-fill-secondary)]" />
-                <div className="h-3 w-1/3 animate-pulse rounded bg-[var(--color-fill-secondary)]" />
+                <div className="h-4 w-2/3 animate-pulse rounded-sm bg-(--color-fill-secondary)" />
+                <div className="h-3 w-1/3 animate-pulse rounded-sm bg-(--color-fill-secondary)" />
               </div>
             </div>
           ))}

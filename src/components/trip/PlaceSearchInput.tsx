@@ -106,19 +106,19 @@ export function PlaceSearchInput({
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-2 rounded-xl bg-[var(--color-fill-secondary)] px-3 py-2">
-        <SearchIcon className="h-4 w-4 shrink-0 text-[var(--color-label-tertiary)]" />
+      <div className="flex items-center gap-2 rounded-xl bg-(--color-fill-secondary) px-3 py-2">
+        <SearchIcon className="h-4 w-4 shrink-0 text-(--color-label-tertiary)" />
         <input
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+          className="w-full bg-transparent text-[1.0625rem] outline-hidden placeholder:text-(--color-label-tertiary)"
         />
       </div>
       {loading && (
-        <p className="mt-1 px-1 text-[0.8125rem] text-[var(--color-label-tertiary)]">Searching...</p>
+        <p className="mt-1 px-1 text-[0.8125rem] text-(--color-label-tertiary)">Searching...</p>
       )}
-      {error && <p className="mt-1 px-1 text-[0.8125rem] text-[var(--color-destructive)]">{error}</p>}
+      {error && <p className="mt-1 px-1 text-[0.8125rem] text-(--color-destructive)">{error}</p>}
       {suggestions.length > 0 && (
         <ul className="sheet-material ios-list absolute z-30 mt-1 w-full overflow-hidden rounded-2xl shadow-lg">
           {suggestions.map((place, index) => (
@@ -142,10 +142,10 @@ export function PlaceSearchInput({
                     setSubmittingIndex(null);
                   }
                 }}
-                className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2.5 text-left text-[1.0625rem] active:bg-[var(--color-fill-secondary)] disabled:opacity-50"
+                className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2.5 text-left text-[1.0625rem] active:bg-(--color-fill-secondary) disabled:opacity-50"
               >
                 {submittingIndex === index && (
-                  <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent text-[var(--color-accent)]" />
+                  <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent text-(--color-accent)" />
                 )}
                 <span className="min-w-0 flex-1 truncate">
                   {submittingIndex === index ? "Adding..." : place.label}

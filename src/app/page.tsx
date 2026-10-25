@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <div className="flex flex-col gap-2">
         <h1 className="text-[1.75rem] font-bold tracking-tight">Trip Planner</h1>
-        <p className="max-w-xs text-[1.0625rem] text-[var(--color-label-secondary)]">
+        <p className="max-w-xs text-[1.0625rem] text-(--color-label-secondary)">
           Plan the best order to visit your places, and share it with friends.
         </p>
       </div>
@@ -35,8 +35,8 @@ export default function HomePage() {
       <ul className="flex w-full max-w-xs flex-col gap-2.5 text-left">
         {POINTS.map((point) => (
           <li key={point} className="flex gap-2.5 text-[0.9375rem] leading-snug">
-            <span aria-hidden="true" className="mt-[0.4rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]" />
-            <span className="text-[var(--color-label-secondary)]">{point}</span>
+            <span aria-hidden="true" className="mt-[0.4rem] h-1.5 w-1.5 shrink-0 rounded-full bg-(--color-accent)" />
+            <span className="text-(--color-label-secondary)">{point}</span>
           </li>
         ))}
       </ul>
@@ -53,9 +53,9 @@ export default function HomePage() {
         >
           Sign Up
         </Link>
-        <p className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+        <p className="text-[0.9375rem] text-(--color-label-secondary)">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-[var(--color-accent)]">
+          <Link href="/login" className="font-medium text-(--color-accent)">
             Log in
           </Link>
         </p>

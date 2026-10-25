@@ -62,10 +62,10 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
   if (undoVisible) {
     return (
       <div className="flex min-h-[52px] items-center justify-between px-4 py-2.5">
-        <span className="text-[0.9375rem] text-[var(--color-label-secondary)]">
+        <span className="text-[0.9375rem] text-(--color-label-secondary)">
           Removed &ldquo;{stop.name}&rdquo;
         </span>
-        <button type="button" onClick={undo} className="text-[0.9375rem] font-medium text-[var(--color-accent)]">
+        <button type="button" onClick={undo} className="text-[0.9375rem] font-medium text-(--color-accent)">
           Undo
         </button>
       </div>
@@ -76,14 +76,14 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
 
   return (
     <>
-      <div className="flex min-h-[52px] items-center bg-[var(--color-bg-elevated)]">
+      <div className="flex min-h-[52px] items-center bg-(--color-bg-elevated)">
         <button
           type="button"
           onClick={() => setMapsSheetOpen(true)}
           aria-label={`${stop.name}, open directions in Google Maps${leg ? `, ${formatDistance(leg.distanceMeters)} from the previous stop` : ""}`}
-          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-2.5 text-left active:bg-[var(--color-fill-secondary)]"
+          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-2.5 text-left active:bg-(--color-fill-secondary)"
         >
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.8125rem] font-semibold text-white">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--color-accent) text-[0.8125rem] font-semibold text-white">
             {hasRoute ? position : ""}
           </span>
           <span className="flex-1 truncate text-[1.0625rem]">{stop.name}</span>
@@ -92,7 +92,7 @@ export function StopRow({ tripId, stop, position }: StopRowProps) {
           type="button"
           onClick={() => setConfirmOpen(true)}
           aria-label={`Remove ${stop.name}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center pr-4 text-[var(--color-destructive)] active:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center pr-4 text-(--color-destructive) active:opacity-50"
         >
           <TrashIcon className="h-5 w-5" />
         </button>

@@ -47,7 +47,7 @@ export default function NewTripPage(props: { searchParams: Promise<{ error?: str
               name="name"
               required
               placeholder="Weekend in NYC"
-              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden placeholder:text-(--color-label-tertiary)"
             />
           </FormRow>
           <FormRow label="Starts" htmlFor="start_date">
@@ -56,7 +56,7 @@ export default function NewTripPage(props: { searchParams: Promise<{ error?: str
               name="start_date"
               type="date"
               required
-              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden [&::-webkit-datetime-edit]:justify-end"
             />
           </FormRow>
           <FormRow label="Ends" htmlFor="end_date">
@@ -65,13 +65,13 @@ export default function NewTripPage(props: { searchParams: Promise<{ error?: str
               name="end_date"
               type="date"
               required
-              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
+              className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden [&::-webkit-datetime-edit]:justify-end"
             />
           </FormRow>
         </ListSection>
 
         <div className="flex flex-col gap-2">
-          <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
+          <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-(--color-label-secondary)">
             Starting point
           </p>
           <PlaceSearchInput
@@ -82,12 +82,12 @@ export default function NewTripPage(props: { searchParams: Promise<{ error?: str
           <button
             type="button"
             onClick={geolocation.request}
-            className="flex min-h-[44px] w-fit items-center gap-2 px-1 text-[1.0625rem] text-[var(--color-accent)]"
+            className="flex min-h-[44px] w-fit items-center gap-2 px-1 text-[1.0625rem] text-(--color-accent)"
           >
             <LocationIcon className="h-5 w-5" />
             {geolocation.loading ? "Locating..." : "Use current location"}
           </button>
-          <p className="px-1 text-[0.8125rem] text-[var(--color-label-secondary)]">
+          <p className="px-1 text-[0.8125rem] text-(--color-label-secondary)">
             Starting from: {resolvedOrigin.label}
           </p>
         </div>

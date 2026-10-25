@@ -45,7 +45,7 @@ export function EditTripForm({
             name="name"
             defaultValue={name}
             required
-            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none placeholder:text-[var(--color-label-tertiary)]"
+            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden placeholder:text-(--color-label-tertiary)"
           />
         </FormRow>
         <FormRow label="Starts" htmlFor="start_date">
@@ -55,7 +55,7 @@ export function EditTripForm({
             type="date"
             defaultValue={startDate}
             required
-            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
+            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden [&::-webkit-datetime-edit]:justify-end"
           />
         </FormRow>
         <FormRow label="Ends" htmlFor="end_date">
@@ -65,20 +65,20 @@ export function EditTripForm({
             type="date"
             defaultValue={endDate}
             required
-            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-none"
+            className="flex-1 bg-transparent text-right text-[1.0625rem] outline-hidden [&::-webkit-datetime-edit]:justify-end"
           />
         </FormRow>
       </ListSection>
 
       <div className="flex flex-col gap-2">
-        <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-[var(--color-label-secondary)]">
+        <p className="px-4 text-[0.8125rem] font-medium uppercase tracking-wide text-(--color-label-secondary)">
           Starting point
         </p>
         {/* Biased toward the origin being replaced — changing a starting point almost always means
             picking a different place in the same city, and without this an ambiguous name ("Central
             Park", "Chinatown") ranks a same-named place in another state first. */}
         <PlaceSearchInput placeholder="Hotel, address..." onSelect={setOrigin} focus={origin} />
-        <p className="px-1 text-[0.8125rem] text-[var(--color-label-secondary)]">Starting from: {origin.label}</p>
+        <p className="px-1 text-[0.8125rem] text-(--color-label-secondary)">Starting from: {origin.label}</p>
       </div>
 
       <input type="hidden" name="origin_label" value={origin.label} />

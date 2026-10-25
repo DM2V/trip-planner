@@ -26,7 +26,7 @@ export function ConfirmDeleteSheet({
         <>
           <p className="truncate text-[0.9375rem] font-medium">{title}</p>
           {message && (
-            <p className="mt-0.5 text-[0.8125rem] text-[var(--color-label-secondary)]">{message}</p>
+            <p className="mt-0.5 text-[0.8125rem] text-(--color-label-secondary)">{message}</p>
           )}
         </>
       }
